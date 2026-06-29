@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>富士山实时天气 · 登山参考</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#0d1b2a; --panel:#16263a; --panel2:#1d3148;
+    --line:#2b4359; --text:#eaf2fb; --sub:#9fb4c9; --accent:#4fc3f7;
+    --good:#34d399; --warn:#fbbf24; --bad:#f87171; --gold:#ffd166;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;
+    background:linear-gradient(160deg,#0b1726,#0d1b2a 40%,#10243a);color:var(--text);
+    min-height:100vh;padding:16px;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:6px}
+  h1{font-size:22px;font-weight:700;letter-spacing:.5px}
+  h1 .mt{color:var(--accent)}
+  .meta{font-size:12.5px;color:var(--sub)}
+  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0 16px}
+  button{background:var(--accent);color:#06243a;border:0;border-radius:8px;
+    padding:8px 14px;font-size:13.5px;font-weight:600;cursor:pointer}
+  button:active{transform:translateY(1px)}
+  .updated{font-size:12.5px;color:var(--sub)}
+  .season{font-size:12.5px;background:#1d3148;border:1px solid var(--line);
+    border-radius:8px;padding:7px 12px;color:var(--sub)}
+
+  /* top row: 御来光 + 安全评估 */
+  .toprow{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;margin-bottom:18px}
+  @media(max-width:760px){.toprow{grid-template-columns:1fr}}
+  .goraiko{border-radius:14px;padding:16px 18px;border:1px solid rgba(255,209,102,.45);
+    background:linear-gradient(135deg,rgba(255,209,102,.16),rgba(255,140,66,.08))}
+  .goraiko .lbl{font-size:13px;color:var(--gold);font-weight:600;display:flex;align-items:center;gap:6px}
+  .goraiko .big{display:flex;align-items:baseline;gap:10px;margin:6px 0 4px}
+  .goraiko .pct{font-size:42px;font-weight:800;color:var(--gold)}
+  .goraiko .grade{font-size:16px;font-weight:700}
+  .goraiko .when{font-size:12.5px;color:var(--sub)}
+  .goraiko .detail{font-size:12.5px;color:var(--sub);margin-top:6px}
+
+  .verdict{border-radius:14px;padding:16px 18px;border:1px solid var(--line)}
+  .verdict h2{font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .verdict p{font-size:13.5px}
+  .v-good{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.5)}
+  .v-warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.5)}
+  .v-bad{background:rgba(248,113,113,.13);border-color:rgba(248,113,113,.55)}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+
+  /* trail selector */
+  .trail-head{font-size:15px;font-weight:700;margin:4px 0 10px}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--text);
+    border-radius:10px;padding:9px 14px;font-size:13.5px;cursor:pointer;font-weight:600}
+  .tab small{display:block;font-weight:400;color:var(--sub);font-size:11px;margin-top:2px}
+  .tab.active{background:var(--accent);color:#06243a;border-color:var(--accent)}
+  .tab.active small{color:#0a3a59}
+
+  .trail-info{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px;margin-bottom:18px}
+  .trail-info .tmeta{font-size:12.5px;color:var(--sub);margin-bottom:12px}
+  .trail-info .tmeta b{color:var(--text)}
+  .focus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
+  @media(max-width:760px){.focus{grid-template-columns:repeat(2,1fr)}}
+  .fbox{background:var(--panel2);border-radius:10px;padding:12px;text-align:center;border:1px solid transparent}
+  .fbox .fk{font-size:12px;color:var(--sub)}
+  .fbox .fv{font-size:22px;font-weight:700;margin-top:3px}
+  .fbox .fu{font-size:11.5px;color:var(--sub)}
+  .fbox.alert{border-color:var(--bad);background:rgba(248,113,113,.12)}
+  .fbox.warnb{border-color:var(--warn);background:rgba(251,191,36,.10)}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card .elev{font-size:12.5px;color:var(--sub)}
+  .card .name{font-size:16px;font-weight:700;margin-bottom:10px}
+  .card .now{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .card .icon{font-size:38px;line-height:1}
+  .card .temp{font-size:34px;font-weight:700}
+  .card .cond{font-size:13px;color:var(--sub)}
+  .card .feels{font-size:12.5px;color:var(--sub)}
+  .rows{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:13px}
+  .row{display:flex;justify-content:space-between;background:var(--panel2);
+    border-radius:8px;padding:7px 9px}
+  .row .k{color:var(--sub)}
+  .row .v{font-weight:600}
+  .pill{font-size:11px;padding:1px 7px;border-radius:20px;font-weight:600;margin-left:6px}
+  .p-good{background:rgba(52,211,153,.2);color:var(--good)}
+  .p-warn{background:rgba(251,191,36,.2);color:var(--warn)}
+  .p-bad{background:rgba(248,113,113,.22);color:var(--bad)}
+
+  section h3{font-size:15px;margin:6px 0 12px;font-weight:700}
+  .chart-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 14px 6px;margin-bottom:20px}
+  .chart-wrap{position:relative;height:300px}
+  .legend{font-size:12px;color:var(--sub);margin:8px 2px 2px}
+
+  table{width:100%;border-collapse:collapse;background:var(--panel);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:13.5px}
+  th,td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line)}
+  th{background:var(--panel2);color:var(--sub);font-weight:600}
+  tr:last-child td{border-bottom:0}
+  td.day{text-align:left;font-weight:600}
+
+  .err{background:rgba(248,113,113,.13);border:1px solid var(--bad);
+    border-radius:12px;padding:14px;font-size:13.5px;display:none;margin-bottom:14px}
+  footer{margin-top:24px;font-size:11.5px;color:var(--sub);text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🗻 <span class="mt">富士山</span> 实时天气</h1>
+    <span class="meta">登山参考 · 数据源 Open-Meteo · 日本时间 (JST)</span>
+  </header>
+
+  <div class="bar">
+    <button id="refresh">↻ 刷新</button>
+    <span class="updated" id="updated">加载中…</span>
+    <span class="season" id="season"></span>
+  </div>
+
+  <div class="err" id="err"></div>
+
+  <div class="toprow">
+    <div class="goraiko" id="goraiko">
+      <div class="lbl">🌅 御来光（山顶日出）观赏概率</div>
+      <div class="big"><span class="pct" id="gk-pct">—</span><span class="grade" id="gk-grade">计算中…</span></div>
+      <div class="when" id="gk-when"></div>
+      <div class="detail" id="gk-detail"></div>
+    </div>
+    <div class="verdict v-warn" id="verdict">
+      <h2><span class="dot" style="background:var(--warn)"></span> 登顶安全评估</h2>
+      <p id="verdict-text">正在评估…</p>
+    </div>
+  </div>
+
+  <div class="trail-head">🥾 选择登山线路</div>
+  <div class="tabs" id="tabs"></div>
+
+  <div class="trail-info" id="trail-info"></div>
+
+  <div class="grid" id="cards"></div>
+
+  <section>
+    <div class="chart-card">
+      <h3>未来 24 小时 · 山顶趋势</h3>
+      <div class="chart-wrap"><canvas id="chart"></canvas></div>
+      <div class="legend">红线=阵风(m/s) · 蓝柱=降水概率(%) · 橙线=体感温度(°C)。阵风持续 &gt;12 m/s 时强烈不建议登顶。</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>未来 7 天 · 山顶预报</h3>
+    <table id="daily"><tbody><tr><td>加载中…</td></tr></tbody></table>
+  </section>
+
+  <footer>
+    <div>风速阈值：&lt;8 m/s 良好 · 8–12 注意 · 12–18 危险 · &gt;18 极度危险（约 8 级以上）。山顶体感常年偏低，夏季亦可接近冰点。</div>
+    <div>御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。每 10 分钟自动刷新；登山前请同时核对官方信息（各登山道官网 / 气象厅）。</div>
+  </footer>
+</div>
+
+<script>
+const LAT=35.3606, LON=138.7274;
+
+// 固定两个高度
+const BASE  ={key:'base',  name:'山脚 · 河口湖一带', lat:35.5000, lon:138.7600, elev:860,  icon:'🏞️'};
+const SUMMIT={key:'summit',name:'山顶 · 剑峰',       lat:LAT,     lon:LON,      elev:3776, icon:'⛰️'};
+
+// 四条登山道（坐标为各自五合目附近，海拔显式给定用于降尺度）
+const TRAILS={
+  yoshida:   {name:'吉田口', lat:35.3942,lon:138.7335,elev:2305,icon:'🚌',side:'北麓 · 山梨县',
+    diff:'中等 · 最热门',huts:'山小屋/救护点最多',
+    desc:'设施最完善、夜间也有补给与救援，初次登山首选；旺季人流大。上下分道。'},
+  fujinomiya:{name:'富士宫口',lat:35.3357,lon:138.7320,elev:2380,icon:'⛩️',side:'南麓 · 静冈县',
+    diff:'较陡 · 距顶最近',huts:'较多',
+    desc:'起点最高、路程最短但坡度大；上下同一条路，会车较多。'},
+  subashiri: {name:'须走口', lat:35.3960,lon:138.7660,elev:1970,icon:'🌲',side:'东麓 · 静冈县',
+    diff:'中等 · 较清静',huts:'中等',
+    desc:'低段森林遮蔽好、人较少；本八合目与吉田道汇合，下山有“砂走”。'},
+  gotemba:   {name:'御殿场口',lat:35.3300,lon:138.7930,elev:1440,icon:'🏜️',side:'东南麓 · 静冈县',
+    diff:'最长最难 · 老手向',huts:'最少',
+    desc:'起点最低、距离与爬升最大，山小屋稀少，适合体力强者；下山“大砂走”著名。'},
+};
+let currentTrail='yoshida';
+
+const WMO={0:['晴','☀️'],1:['大致晴朗','🌤️'],2:['局部多云','⛅'],3:['阴','☁️'],
+  45:['雾','🌫️'],48:['雾凇','🌫️'],51:['毛毛雨','🌦️'],53:['毛毛雨','🌦️'],55:['浓毛毛雨','🌧️'],
+  56:['冻毛毛雨','🌨️'],57:['冻毛毛雨','🌨️'],61:['小雨','🌧️'],63:['中雨','🌧️'],65:['大雨','🌧️'],
+  66:['冻雨','🌨️'],67:['冻雨','🌨️'],71:['小雪','🌨️'],73:['中雪','❄️'],75:['大雪','❄️'],77:['雪粒','❄️'],
+  80:['阵雨','🌦️'],81:['强阵雨','🌧️'],82:['暴雨','⛈️'],85:['阵雪','🌨️'],86:['强阵雪','❄️'],
+  95:['雷暴','⛈️'],96:['雷暴伴冰雹','⛈️'],99:['强雷暴冰雹','⛈️']};
+const wmo=c=>WMO[c]||['未知','❓'];
+function windPill(ms){if(ms<8)return['良好','p-good'];if(ms<12)return['注意','p-warn'];if(ms<18)return['危险','p-bad'];return['极危险','p-bad'];}
+function fmtDir(d){return['北','东北','东','东南','南','西南','西','西北'][Math.round(d/45)%8];}
+function hourIdx(d){const t=d.current.time;let i=d.hourly.time.findIndex(x=>x===t);return i<0?0:i;}
+
+const cache={};
+async function fetchPoint(P){
+  const p=new URLSearchParams({latitude:P.lat,longitude:P.lon,elevation:P.elev,
+    current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_gusts_10m,wind_direction_10m',
+    hourly:'temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,cloud_cover,visibility',
+    daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset',
+    timezone:'Asia/Tokyo',forecast_days:7,wind_speed_unit:'ms'});
+  const r=await fetch('https://api.open-meteo.com/v1/forecast?'+p.toString());
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+async function getPoint(id,P){if(cache[id])return cache[id];cache[id]=await fetchPoint(P);return cache[id];}
+
+let chart;
+
+function levelCard(L,d){
+  const c=d.current,[cond,icon]=wmo(c.weather_code),[wlbl,wcls]=windPill(c.wind_speed_10m),[glbl,gcls]=windPill(c.wind_gusts_10m);
+  const i=hourIdx(d),v=d.hourly.visibility[i];
+  const visKm=v==null?'—':(v/1000).toFixed(v<10000?1:0);
+  return `<div class="card">
+    <div class="elev">海拔 ${L.elev} m</div>
+    <div class="name">${L.icon} ${L.name}</div>
+    <div class="now">
+      <div class="icon">${icon}</div>
+      <div><div class="temp">${Math.round(c.temperature_2m)}°</div><div class="cond">${cond}</div></div>
+      <div class="feels" style="margin-left:auto;text-align:right">体感<br><b style="font-size:17px;color:var(--text)">${Math.round(c.apparent_temperature)}°</b></div>
+    </div>
+    <div class="rows">
+      <div class="row"><span class="k">风速</span><span class="v">${c.wind_speed_10m.toFixed(1)} m/s<span class="pill ${wcls}">${wlbl}</span></span></div>
+      <div class="row"><span class="k">阵风</span><span class="v">${c.wind_gusts_10m.toFixed(1)} m/s<span class="pill ${gcls}">${glbl}</span></span></div>
+      <div class="row"><span class="k">风向</span><span class="v">${fmtDir(c.wind_direction_10m)}风</span></div>
+      <div class="row"><span class="k">能见度</span><span class="v">${visKm} km</span></div>
+      <div class="row"><span class="k">降雨量</span><span class="v">${c.precipitation.toFixed(1)} mm</span></div>
+      <div class="row"><span class="k">云量</span><span class="v">${c.cloud_cover}%</span></div>
+    </div></div>`;
+}
+
+function renderTrailInfo(T,d){
+  const c=d.current,i=hourIdx(d);
+  const v=d.hourly.visibility[i], visKm=v==null?'—':(v/1000).toFixed(v<10000?1:0);
+  const pop=d.hourly.precipitation_probability[i];
+  const todayRain=d.daily.precipitation_sum[0];
+  // 重点框：能见度 / 当前降雨量 / 今日累计降雨 / 降水概率
+  const visCls=v==null?'':(v<1000?'alert':v<3000?'warnb':'');
+  const rainCls=c.precipitation>=4?'alert':c.precipitation>0?'warnb':'';
+  const popCls=pop>=60?'alert':pop>=30?'warnb':'';
+  const [glbl,gcls]=windPill(c.wind_gusts_10m);
+  return `<div class="tmeta">
+      ${T.icon} <b>${T.name}</b> · 起点海拔 <b>${T.elev} m</b> · ${T.side} · 难度：<b>${T.diff}</b> · ${T.huts}<br>${T.desc}</div>
+    <div class="focus">
+      <div class="fbox ${visCls}"><div class="fk">能见度</div><div class="fv">${visKm}</div><div class="fu">km</div></div>
+      <div class="fbox ${rainCls}"><div class="fk">当前降雨量</div><div class="fv">${c.precipitation.toFixed(1)}</div><div class="fu">mm/h</div></div>
+      <div class="fbox ${popCls}"><div class="fk">降水概率</div><div class="fv">${pop??'—'}</div><div class="fu">%</div></div>
+      <div class="fbox"><div class="fk">今日累计降雨</div><div class="fv">${todayRain.toFixed(1)}</div><div class="fu">mm</div></div>
+    </div>
+    <div class="focus" style="margin-top:10px">
+      <div class="fbox"><div class="fk">气温/体感</div><div class="fv">${Math.round(c.temperature_2m)}°/${Math.round(c.apparent_temperature)}°</div><div class="fu">起点</div></div>
+      <div class="fbox"><div class="fk">风速</div><div class="fv">${c.wind_speed_10m.toFixed(0)}</div><div class="fu">m/s</div></div>
+      <div class="fbox"><div class="fk">阵风</div><div class="fv">${c.wind_gusts_10m.toFixed(0)}<span class="pill ${gcls}" style="margin-left:4px">${glbl}</span></div><div class="fu">m/s</div></div>
+      <div class="fbox"><div class="fk">云量</div><div class="fv">${c.cloud_cover}</div><div class="fu">%</div></div>
+    </div>`;
+}
+
+function goraiko(summit){
+  const d=summit.daily, now=new Date(summit.current.time).getTime();
+  // 取下一个日出
+  let di=0; for(let k=0;k<d.sunrise.length;k++){if(new Date(d.sunrise[k]).getTime()>now){di=k;break;}di=k;}
+  if(new Date(d.sunrise[0]).getTime()>now) di=0;
+  const srTime=new Date(d.sunrise[di]);
+  // hourly 中日出所在与前一小时云量/天气
+  const h=summit.hourly;
+  let hi=h.time.findIndex(t=>new Date(t).getTime()>=srTime.getTime());
+  if(hi<0)hi=0;
+  const idxs=[Math.max(0,hi-1),hi];
+  let cloud=0,pop=0,fog=false,n=0;
+  idxs.forEach(j=>{cloud+=h.cloud_cover[j];pop=Math.max(pop,h.precipitation_probability[j]||0);
+    const code=h.weather_code[j];if(code===45||code===48)fog=true;n++;});
+  cloud/=n;
+  let prob=100-cloud;
+  if(pop>=60)prob*=0.3; else if(pop>=30)prob*=0.6;
+  if(fog)prob*=0.5;
+  prob=Math.max(0,Math.min(95,Math.round(prob)));
+  let grade,col;
+  if(prob>=70){grade='极佳';col='var(--good)';}
+  else if(prob>=50){grade='较好';col='var(--good)';}
+  else if(prob>=30){grade='一般';col='var(--warn)';}
+  else if(prob>=15){grade='较低';col='var(--warn)';}
+  else{grade='渺茫';col='var(--bad)';}
+  const dayLbl=di===0?(srTime.getTime()>now?'今晨':'明晨'):'明晨';
+  document.getElementById('gk-pct').textContent=prob+'%';
+  document.getElementById('gk-pct').style.color=col;
+  document.getElementById('gk-grade').textContent=grade;
+  document.getElementById('gk-grade').style.color=col;
+  document.getElementById('gk-when').textContent=
+    `${dayLbl}日出 ${srTime.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})} · 山顶`;
+  document.getElementById('gk-detail').textContent=
+    `日出时段山顶云量约 ${Math.round(cloud)}%，降水概率 ${pop}%${fog?'，有雾':''}。`;
+}
+
+function assess(summit){
+  const c=summit.current,v=document.getElementById('verdict'),txt=document.getElementById('verdict-text');
+  let level='good',reasons=[];const code=c.weather_code;
+  const thunder=code>=95, heavy=[65,82,75,86,99,67].includes(code), anyP=c.precipitation>0||code>=51;
+  if(c.wind_gusts_10m>=18||c.wind_speed_10m>=18){level='bad';reasons.push(`山顶阵风高达 ${c.wind_gusts_10m.toFixed(0)} m/s，极度危险，禁止登顶`);}
+  else if(c.wind_gusts_10m>=12||c.wind_speed_10m>=12){level='bad';reasons.push(`山顶阵风 ${c.wind_gusts_10m.toFixed(0)} m/s 偏强，强烈不建议登顶`);}
+  else if(c.wind_speed_10m>=8){if(level==='good')level='warn';reasons.push(`山顶风速 ${c.wind_speed_10m.toFixed(0)} m/s，注意身体平衡与失温`);}
+  if(thunder){level='bad';reasons.push('有雷暴，山脊与山顶极危险，务必避开');}
+  else if(heavy){level='bad';reasons.push('强降水/降雪，路滑且能见度差');}
+  else if(anyP){if(level==='good')level='warn';reasons.push('有降水，注意防水保暖与路面湿滑');}
+  if(c.apparent_temperature<=0){if(level==='good')level='warn';reasons.push(`山顶体感 ${Math.round(c.apparent_temperature)}°C，需全套保暖与防风装备`);}
+  const i=hourIdx(summit),vis=summit.hourly.visibility[i];
+  if(vis!=null&&vis<1000){if(level==='good')level='warn';reasons.push('山顶能见度低于 1 km，注意迷路风险');}
+  v.className='verdict '+(level==='good'?'v-good':level==='warn'?'v-warn':'v-bad');
+  const col=level==='good'?'var(--good)':level==='warn'?'var(--warn)':'var(--bad)';
+  const head=level==='good'?'✅ 条件良好':level==='warn'?'⚠️ 需谨慎':'⛔ 不建议登顶';
+  v.querySelector('h2').innerHTML=`<span class="dot" style="background:${col}"></span> 登顶安全评估 — ${head}`;
+  txt.innerHTML=reasons.length?reasons.map(r=>'· '+r).join('<br>'):'当前山顶风速、降水、能见度、体感温度均在相对安全区间。仍请关注实时变化并备足保暖装备。';
+}
+
+function drawChart(summit){
+  const h=summit.hourly,now=new Date(summit.current.time).getTime();
+  let start=h.time.findIndex(t=>new Date(t).getTime()>=now);if(start<0)start=0;
+  const end=Math.min(start+24,h.time.length),labels=[],gust=[],pop=[],feels=[];
+  for(let i=start;i<end;i++){labels.push(new Date(h.time[i]).toLocaleTimeString('zh-CN',{hour:'2-digit'}));
+    gust.push(h.wind_gusts_10m[i]);pop.push(h.precipitation_probability[i]);feels.push(h.apparent_temperature[i]);}
+  if(chart)chart.destroy();
+  chart=new Chart(document.getElementById('chart'),{data:{labels,datasets:[
+    {type:'bar',label:'降水概率(%)',data:pop,yAxisID:'y1',backgroundColor:'rgba(79,195,247,.35)',borderRadius:3,order:3},
+    {type:'line',label:'阵风(m/s)',data:gust,yAxisID:'y',borderColor:'#f87171',backgroundColor:'#f87171',tension:.3,pointRadius:0,borderWidth:2,order:1},
+    {type:'line',label:'体感温度(°C)',data:feels,yAxisID:'y2',borderColor:'#fbbf24',backgroundColor:'#fbbf24',tension:.3,pointRadius:0,borderWidth:2,borderDash:[4,3],order:2}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:'#9fb4c9',boxWidth:14,font:{size:11}}}},
+    scales:{x:{ticks:{color:'#9fb4c9',maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{color:'rgba(255,255,255,.05)'}},
+      y:{position:'left',title:{display:true,text:'风 m/s',color:'#f87171'},ticks:{color:'#9fb4c9'},grid:{color:'rgba(255,255,255,.06)'}},
+      y1:{position:'right',min:0,max:100,title:{display:true,text:'降水%',color:'#4fc3f7'},ticks:{color:'#9fb4c9'},grid:{display:false}},
+      y2:{display:false}}}});
+}
+
+function drawDaily(summit){
+  const d=summit.daily;let html='<thead><tr><th>日期</th><th>天气</th><th>高/低温</th><th>降水概率</th><th>降雨量</th><th>最大阵风</th><th>日出/日落</th></tr></thead><tbody>';
+  for(let i=0;i<d.time.length;i++){const[cond,icon]=wmo(d.weather_code[i]),dt=new Date(d.time[i]);
+    const day=i===0?'今天':dt.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',weekday:'short'});
+    const sr=new Date(d.sunrise[i]).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    const ss=new Date(d.sunset[i]).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    const[glbl,gcls]=windPill(d.wind_gusts_10m_max[i]);
+    html+=`<tr><td class="day">${day}</td><td>${icon} ${cond}</td>
+      <td>${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°</td>
+      <td>${d.precipitation_probability_max[i]??'—'}%</td><td>${d.precipitation_sum[i].toFixed(1)} mm</td>
+      <td>${d.wind_gusts_10m_max[i].toFixed(0)} m/s <span class="pill ${gcls}">${glbl}</span></td>
+      <td>🌅${sr} 🌇${ss}</td></tr>`;}
+  document.getElementById('daily').innerHTML=html+'</tbody>';
+}
+
+function renderTabs(){
+  const el=document.getElementById('tabs');el.innerHTML='';
+  Object.entries(TRAILS).forEach(([id,T])=>{
+    el.insertAdjacentHTML('beforeend',
+      `<div class="tab ${id===currentTrail?'active':''}" data-id="${id}">${T.icon} ${T.name}<small>${T.elev}m · ${T.diff}</small></div>`);
+  });
+  el.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{currentTrail=t.dataset.id;load();}));
+}
+
+function render(base,trail,summit){
+  document.getElementById('err').style.display='none';
+  goraiko(summit);
+  assess(summit);
+  const T=TRAILS[currentTrail];
+  document.getElementById('trail-info').innerHTML=renderTrailInfo(T,trail);
+  document.getElementById('cards').innerHTML=
+    levelCard(BASE,base)+
+    levelCard({...T,name:T.name+' · 五合目',icon:T.icon},trail)+
+    levelCard(SUMMIT,summit);
+  drawChart(summit);drawDaily(summit);
+  const t=new Date(summit.current.time);
+  document.getElementById('updated').textContent='更新于 '+t.toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' (JST)';
+}
+
+function setSeason(){
+  const now=new Date(),m=now.getMonth()+1,day=now.getDate();
+  document.getElementById('season').textContent=((m===7)||(m===8)||(m===9&&day<=10))
+    ?'🟢 当前为开山季（约7月–9月上旬），各登山道开放，注意各道具体开放日期。'
+    :'🔴 当前为闭山期，多数登山道及山小屋关闭，强烈不建议攀登。';
+}
+
+async function load(){
+  renderTabs();
+  document.getElementById('updated').textContent='刷新中…';
+  try{
+    const T=TRAILS[currentTrail];
+    const [base,trail,summit]=await Promise.all([
+      getPoint('base',BASE),
+      getPoint('trail_'+currentTrail,T),
+      getPoint('summit',SUMMIT),
+    ]);
+    render(base,trail,summit);
+  }catch(e){
+    const err=document.getElementById('err');err.style.display='block';
+    err.textContent='获取天气失败：'+e.message+'。请检查网络后点击刷新。（离线打开需联网才能拉取实时数据）';
+    document.getElementById('updated').textContent='加载失败';
+  }
+}
+
+document.getElementById('refresh').addEventListener('click',()=>{for(const k in cache)delete cache[k];load();});
+setSeason();renderTabs();load();
+setInterval(()=>{for(const k in cache)delete cache[k];load();},10*60*1000);
+</script>
+</body>
+</html>
