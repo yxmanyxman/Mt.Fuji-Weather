@@ -140,7 +140,7 @@
   .chart-wrap{position:relative;height:300px}
   .legend{font-size:12px;color:var(--sub);margin:8px 2px 2px}
 
-  .win-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+  .win-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:20px}
   @media(max-width:760px){.win-list{grid-template-columns:1fr}}
   .win{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
   .win.best{border-color:rgba(52,211,153,.55);background:rgba(52,211,153,.07)}
@@ -244,6 +244,7 @@
   <footer>
     <div id="foot1"></div>
     <div id="foot2"></div>
+    <div id="foot3" style="margin-top:6px"></div>
     <div class="links">
       <a id="lnk0" href="https://www.fujisan-climb.jp/" target="_blank" rel="noopener"></a>
       <a id="lnk1" href="https://www.fujisan-climb.jp/season/" target="_blank" rel="noopener"></a>
@@ -372,7 +373,8 @@ const I18N={
     stale:t=>`⚠️ 实时获取失败，当前为缓存数据（最后成功更新 ${t}）。联网后点「刷新」即可更新。`,
     err:m=>`获取天气失败：${m}，且本地无缓存数据。请联网后点击刷新。`,
     foot1:'风速阈值：<8 m/s 良好 · 8–12 注意 · 12–18 危险 · >18 极度危险（约 8 级以上）。山顶体感常年偏低，夏季亦可接近冰点。',
-    foot2:'御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。每 10 分钟自动刷新，弱网时显示上次缓存数据；登山前请务必核对下方官方信息。本站使用 Microsoft Clarity 收集匿名访问统计（含会话回放）以改进体验。',
+    foot2:'御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。每 10 分钟自动刷新，弱网时显示上次缓存数据；登山前请务必核对下方官方信息。',
+    foot3:'本站使用 Microsoft Clarity 收集匿名访问统计以改进体验。',
     links:['富士登山官方网站','各登山道开放期间','官方天气信息','日本气象厅 预报','tenki.jp 登山天気 (富士山)','实时观测 (各登山道)']
   },
   en:{
@@ -426,7 +428,8 @@ const I18N={
     stale:t=>`⚠️ Live fetch failed; showing cached data (last updated ${t}). Reconnect and tap Refresh.`,
     err:m=>`Failed to fetch weather: ${m}, and no local cache. Reconnect and refresh.`,
     foot1:'Wind thresholds: <8 m/s good · 8–12 caution · 12–18 danger · >18 severe (~Beaufort 8+). Summit feels-like is low year-round, near freezing even in summer.',
-    foot2:'Sunrise probability is estimated from summit cloud cover and precipitation around sunrise — reference only. Auto-refreshes every 10 min; shows cached data on weak networks. Always check the official info below before climbing. This site uses Microsoft Clarity for anonymous usage analytics (incl. session replay) to improve the experience.',
+    foot2:'Sunrise probability is estimated from summit cloud cover and precipitation around sunrise — reference only. Auto-refreshes every 10 min; shows cached data on weak networks. Always check the official info below before climbing.',
+    foot3:'This site uses Microsoft Clarity for anonymous usage analytics to improve the experience.',
     links:['Official Mt. Fuji Climbing','Trail opening dates','Official weather','JMA forecast','tenki.jp Mountain (Fuji)','Real-time obs (trails)']
   }
 };
@@ -690,22 +693,24 @@ function renderBodyClock(summit){
   const srStr=d.sunrise[di], srB=bodyHM(srStr,offSec);
   const ws=bestWindows(summit), winStr=ws.length?ws[0].start:null, winB=winStr?bodyHM(winStr,offSec):null;
   const homeNow=new Date(Date.now()+tzMin(homeTZ,new Date())*60000), nowHf=homeNow.getUTCHours()+homeNow.getUTCMinutes()/60;
-  const cx=100,cy=100,ro=92,ri=64;
+  const cx=100,cy=100,R=92;
   const polar=(r,deg)=>[cx+r*Math.sin(deg*Math.PI/180), cy-r*Math.cos(deg*Math.PI/180)];
-  let segs='';
-  for(let h=0;h<24;h++){const g=1.2,s=h*15+g,e2=(h+1)*15-g;
-    const a=polar(ro,s),b2=polar(ro,e2),c2=polar(ri,e2),d2=polar(ri,s);
-    segs+=`<path d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} A${ro} ${ro} 0 0 1 ${b2[0].toFixed(1)} ${b2[1].toFixed(1)} L${c2[0].toFixed(1)} ${c2[1].toFixed(1)} A${ri} ${ri} 0 0 0 ${d2[0].toFixed(1)} ${d2[1].toFixed(1)} Z" fill="${EN_HEX[energyIdx(h)]}" opacity="0.88"/>`;}
-  let ticks=''; [0,6,12,18].forEach(h=>{const t=polar(ro+11,h*15);ticks+=`<text x="${t[0].toFixed(1)}" y="${(t[1]+4).toFixed(1)}" text-anchor="middle" font-size="11" fill="#9fb4c9">${h}</text>`;});
-  const mk=(hf,emo)=>{const m=polar((ro+ri)/2,hf*15);return `<text x="${m[0].toFixed(1)}" y="${(m[1]+5).toFixed(1)}" text-anchor="middle" font-size="15">${emo}</text>`;};
-  let marks=mk(srB.hf,'🌅'); if(winB)marks+=mk(winB.hf,'🎯');
-  const hnd=polar(ri-6,nowHf*15);
-  const hand=`<line x1="${cx}" y1="${cy}" x2="${hnd[0].toFixed(1)}" y2="${hnd[1].toFixed(1)}" stroke="#eaf2fb" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="3.5" fill="#eaf2fb"/>`;
   const ni=energyIdx(nowHf);
-  const center=`<text x="${cx}" y="${cy-18}" text-anchor="middle" font-size="10" fill="#9fb4c9">${L().bcNow}</text><text x="${cx}" y="${cy+3}" text-anchor="middle" font-size="20" font-weight="700" fill="#eaf2fb">${hm2({h:homeNow.getUTCHours(),m:homeNow.getUTCMinutes()})}</text><text x="${cx}" y="${cy+19}" text-anchor="middle" font-size="11" font-weight="700" fill="${EN_HEX[ni]}">${L().enLevels[ni]}</text>`;
-  const svg=`<svg viewBox="-14 -14 228 228" class="bc-svg" role="img" aria-label="body clock">${segs}${ticks}${marks}${hand}${center}</svg>`;
+  const halo=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${EN_HEX[ni]}" stroke-width="6" opacity="0.55"/><circle cx="${cx}" cy="${cy}" r="${R-4}" fill="#16263a" stroke="#2b4359" stroke-width="1"/>`;
+  let ticks='';
+  for(let h=0;h<12;h++){const major=(h%3===0),a=h*30,o=polar(R-7,a),i2=polar(major?R-16:R-12,a);
+    ticks+=`<line x1="${o[0].toFixed(1)}" y1="${o[1].toFixed(1)}" x2="${i2[0].toFixed(1)}" y2="${i2[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="${major?2.5:1.2}" opacity="${major?0.9:0.45}"/>`;}
+  let nums=''; [['12',0],['3',90],['6',180],['9',270]].forEach(p=>{const q=polar(R-30,p[1]);nums+=`<text x="${q[0].toFixed(1)}" y="${(q[1]+5).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="#eaf2fb">${p[0]}</text>`;});
+  const ca=b=>((b.h%12)+b.m/60)*30;
+  const mk=(b,emo)=>{const m=polar(R-46,ca(b));return `<text x="${m[0].toFixed(1)}" y="${(m[1]+5).toFixed(1)}" text-anchor="middle" font-size="14">${emo}</text>`;};
+  let marks=mk(srB,'🌅'); if(winB)marks+=mk(winB,'🎯');
+  const minA=homeNow.getUTCMinutes()*6, hourA=((homeNow.getUTCHours()%12)+homeNow.getUTCMinutes()/60)*30;
+  const mh=polar(R-24,minA), hh=polar(R-50,hourA);
+  const hands=`<line x1="${cx}" y1="${cy}" x2="${hh[0].toFixed(1)}" y2="${hh[1].toFixed(1)}" stroke="#eaf2fb" stroke-width="4.5" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${mh[0].toFixed(1)}" y2="${mh[1].toFixed(1)}" stroke="#eaf2fb" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4.5" fill="${EN_HEX[ni]}"/>`;
+  const svg=`<svg viewBox="-14 -14 228 228" class="bc-svg" role="img" aria-label="body clock">${halo}${ticks}${nums}${marks}${hands}</svg>`;
   const row=(lbl,jstStr,b)=>{const i=energyIdx(b.hf);return `<div class="bc-row"><span class="bc-l">${lbl}</span> <span class="bc-v">${jstStr.slice(11,16)} JST ${L().bcArrow} <b>${hm2(b)}</b> ${enBadge(b.hf)}</span><div class="bc-ad">${L().enAdvice[i]}</div></div>`;};
-  let info=row('🌅 '+L().bcSunrise, srStr, srB);
+  let info=`<div class="bc-row"><span class="bc-l">${L().bcNow}</span> <span class="bc-v"><b>${hm2({h:homeNow.getUTCHours(),m:homeNow.getUTCMinutes()})}</b> ${enBadge(nowHf)}</span></div>`;
+  info+=row('🌅 '+L().bcSunrise, srStr, srB);
   if(winB)info+=row('🎯 '+L().bcWindow, winStr, winB);
   const legend=`<div class="bc-leg">${L().enLevels.map((n,i)=>`<span><i style="background:${EN_HEX[i]}"></i>${n}</span>`).join('')}</div>`;
   const same=tzMin(homeTZ,new Date())===Math.round(offSec/60)?`<div class="bc-same">${L().bcSame}</div>`:'';
@@ -755,6 +760,7 @@ function applyStatic(){
   document.getElementById('h-daily').textContent=L().hDaily;
   document.getElementById('foot1').textContent=L().foot1;
   document.getElementById('foot2').textContent=L().foot2;
+  document.getElementById('foot3').textContent=L().foot3;
   L().links.forEach((t,i)=>{const a=document.getElementById('lnk'+i);if(a)a.textContent=t;});
 }
 
