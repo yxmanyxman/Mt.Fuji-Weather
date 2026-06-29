@@ -65,7 +65,8 @@
   .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
 
   .trail-head{font-size:15px;font-weight:700;margin:4px 0 10px}
-  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;max-width:520px}
+  .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+  @media(max-width:760px) and (min-width:561px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .tab{background:var(--panel);border:1px solid var(--line);color:var(--text);
     border-radius:10px;padding:11px 14px;font-size:13.5px;cursor:pointer;font-weight:600}
   .tab small{display:block;font-weight:400;color:var(--sub);font-size:11px;margin-top:2px}
@@ -142,6 +143,7 @@
     .card .temp{font-size:30px}
     .goraiko .pct{font-size:36px}
     .win-time{font-size:15px}
+    .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
   }
   .links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;margin:12px 0 4px}
   .links a{color:var(--accent);text-decoration:none;background:var(--panel);
