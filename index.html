@@ -10,6 +10,14 @@
 <meta name="apple-mobile-web-app-title" content="富士山天气">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="icon-192.png">
+<!-- Microsoft Clarity 分析：把下方 CLARITY_PROJECT_ID 替换为你在 clarity.microsoft.com 创建项目后拿到的 ID -->
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "xegrcjkm3t");
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
 <style>
   :root{
@@ -40,6 +48,7 @@
 
   .thunder{background:rgba(248,113,113,.18);border:1px solid var(--bad);border-radius:12px;
     padding:11px 14px;font-size:13.5px;font-weight:600;color:#fff;display:none;margin-bottom:14px}
+  .season.closed-pill{background:rgba(248,113,113,.2);border-color:var(--bad);color:#fff;font-weight:600}
   .stale{background:rgba(251,191,36,.14);border:1px solid var(--warn);border-radius:12px;
     padding:11px 14px;font-size:13px;color:var(--text);display:none;margin-bottom:14px}
   .err{background:rgba(248,113,113,.13);border:1px solid var(--bad);
@@ -64,7 +73,7 @@
   .v-bad{background:rgba(248,113,113,.13);border-color:rgba(248,113,113,.55)}
   .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
 
-  .bclock{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px}
+  .bclock{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:20px;margin-bottom:18px}
   .bc-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
   .bc-t{font-size:14px;font-weight:700}
   .tzsel{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;max-width:58%}
@@ -74,6 +83,13 @@
   .bc-v{font-size:13.5px;font-weight:600}
   .bc-ad{font-size:12px;color:var(--sub);margin-top:2px}
   .enb{font-size:11px;padding:1px 7px;border-radius:20px;font-weight:600;margin-left:4px}
+  .bc-wrap{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .bc-dial{flex:0 0 auto;margin:0 auto}
+  .bc-svg{width:180px;height:180px;display:block}
+  .bc-info{flex:1;min-width:210px}
+  .bc-leg{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:11.5px;color:var(--sub)}
+  .bc-leg span{display:flex;align-items:center;gap:5px}
+  .bc-leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
   .bc-same{font-size:12px;color:var(--sub);margin-top:6px}
   .bc-note{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.5}
   .trail-head{font-size:15px;font-weight:700;margin:4px 0 10px}
@@ -195,11 +211,6 @@
     </div>
   </div>
 
-  <div class="bclock" id="bclock">
-    <div class="bc-head"><span class="bc-t" id="bc-title"></span><select id="tz" class="tzsel"></select></div>
-    <div id="bc-body"></div>
-  </div>
-
   <div class="trail-head" id="trail-head"></div>
   <div class="tabs" id="tabs"></div>
 
@@ -224,6 +235,11 @@
     <h3 id="h-daily"></h3>
     <div class="table-wrap"><table id="daily"><tbody><tr><td></td></tr></tbody></table></div>
   </section>
+
+  <div class="bclock" id="bclock">
+    <div class="bc-head"><span class="bc-t" id="bc-title"></span><select id="tz" class="tzsel"></select></div>
+    <div id="bc-body"></div>
+  </div>
 
   <footer>
     <div id="foot1"></div>
@@ -271,7 +287,17 @@ let currentTrail='yoshida';
 
 // 身体时钟：家乡时区 + 昼夜节律精力估算
 let homeTZ=(function(){try{return localStorage.getItem('fujitz')||Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Tokyo';}catch(_){return 'Asia/Tokyo';}})();
-const TZLIST=[['Asia/Shanghai','中国 (北京/上海) UTC+8'],['Asia/Hong_Kong','香港 UTC+8'],['Asia/Taipei','台北 UTC+8'],['Asia/Tokyo','日本 JST UTC+9'],['Asia/Seoul','首尔 UTC+9'],['Asia/Singapore','新加坡 UTC+8'],['Asia/Bangkok','曼谷 UTC+7'],['Asia/Kolkata','印度 UTC+5:30'],['Asia/Dubai','迪拜 UTC+4'],['Europe/London','伦敦 London'],['Europe/Paris','欧洲中部 CET'],['America/New_York','美东 New York'],['America/Chicago','美中 Chicago'],['America/Denver','美山区 Denver'],['America/Los_Angeles','美西 Los Angeles'],['Australia/Sydney','悉尼 Sydney'],['Pacific/Auckland','奥克兰 Auckland'],['UTC','UTC']];
+const TZLIST=[
+['Pacific/Pago_Pago','萨摩亚 UTC-11'],['Pacific/Honolulu','夏威夷 UTC-10'],['America/Anchorage','阿拉斯加 UTC-9'],
+['America/Los_Angeles','美西 Los Angeles UTC-8'],['America/Denver','美山区 Denver UTC-7'],['America/Chicago','美中 Chicago UTC-6'],
+['America/New_York','美东 New York UTC-5'],['America/Halifax','大西洋 Halifax UTC-4'],['America/Sao_Paulo','圣保罗 UTC-3'],
+['Atlantic/Azores','亚速尔 UTC-1'],['Europe/London','伦敦 London UTC+0'],['Europe/Paris','欧洲中部 CET UTC+1'],
+['Europe/Athens','东欧/雅典 UTC+2'],['Europe/Moscow','莫斯科 UTC+3'],['Asia/Tehran','德黑兰 UTC+3:30'],
+['Asia/Dubai','迪拜 UTC+4'],['Asia/Karachi','卡拉奇 UTC+5'],['Asia/Kolkata','印度 UTC+5:30'],['Asia/Dhaka','达卡 UTC+6'],
+['Asia/Bangkok','曼谷 UTC+7'],['Asia/Shanghai','中国大陆 (北京/上海) UTC+8'],['Asia/Hong_Kong','中国港澳 (香港) UTC+8'],
+['Asia/Taipei','中国台北 UTC+8'],['Asia/Singapore','新加坡 UTC+8'],['Asia/Tokyo','日本 JST UTC+9'],['Asia/Seoul','首尔 UTC+9'],
+['Australia/Adelaide','阿德莱德 UTC+9:30'],['Australia/Sydney','悉尼 Sydney UTC+10'],['Pacific/Noumea','新喀里多尼亚 UTC+11'],
+['Pacific/Auckland','奥克兰 Auckland UTC+12'],['UTC','UTC']];
 const EN_MAP=[2,3,3,3,3,2,2,1,0,0,0,0,1,2,2,1,1,0,0,0,1,1,2,2];
 const EN_HEX=['#34d399','#5ec8ff','#fbbf24','#f87171'];
 function energyIdx(hf){return EN_MAP[((Math.floor(hf)%24)+24)%24];}
@@ -322,7 +348,7 @@ const I18N={
     thunderAlert:r=>`⚡ 雷暴提醒：未来 48 小时内山顶以下时段可能有雷暴，务必避开 — ${r}`,
     bcTitle:'🕐 身体时钟 · 体能预估', bcTz:'家乡时区', bcSunrise:'御来光', bcWindow:'最佳窗口',
     bcArrow:'→ 你的身体时间', bcSame:'（家乡与日本时区基本一致，身体时间≈当地时间）',
-    bcBody:'身体时间',
+    bcBody:'身体时间', bcNow:'现在',
     enLevels:['充沛','尚可','偏低','低谷'],
     enAdvice:['精力较好','尚可','警觉性偏低，注意','困倦低谷，夜行格外当心失误与失温'],
     bcNote:'基于通用昼夜节律的粗略估算，个体差异大，仅供参考（非医疗建议）。',
@@ -346,7 +372,7 @@ const I18N={
     stale:t=>`⚠️ 实时获取失败，当前为缓存数据（最后成功更新 ${t}）。联网后点「刷新」即可更新。`,
     err:m=>`获取天气失败：${m}，且本地无缓存数据。请联网后点击刷新。`,
     foot1:'风速阈值：<8 m/s 良好 · 8–12 注意 · 12–18 危险 · >18 极度危险（约 8 级以上）。山顶体感常年偏低，夏季亦可接近冰点。',
-    foot2:'御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。每 10 分钟自动刷新，弱网时显示上次缓存数据；登山前请务必核对下方官方信息。',
+    foot2:'御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。每 10 分钟自动刷新，弱网时显示上次缓存数据；登山前请务必核对下方官方信息。本站使用 Microsoft Clarity 收集匿名访问统计（含会话回放）以改进体验。',
     links:['富士登山官方网站','各登山道开放期间','官方天气信息','日本气象厅 预报','tenki.jp 登山天気 (富士山)','实时观测 (各登山道)']
   },
   en:{
@@ -376,7 +402,7 @@ const I18N={
     thunderAlert:r=>`⚡ Thunderstorm alert: possible summit thunderstorms in the next 48 h — ${r}. Avoid these times.`,
     bcTitle:'🕐 Body clock · energy estimate', bcTz:'Home TZ', bcSunrise:'Goraiko', bcWindow:'Best window',
     bcArrow:'→ your body time', bcSame:'(home ≈ Japan time; body time ≈ local time)',
-    bcBody:'body time',
+    bcBody:'body time', bcNow:'now',
     enLevels:['Energetic','OK','Low','Trough'],
     enAdvice:['good energy','fairly alert','lower alertness, take care','circadian trough — extra care on night climbs'],
     bcNote:'Rough estimate from a generic circadian rhythm; individual variation is large — reference only (not medical advice).',
@@ -400,7 +426,7 @@ const I18N={
     stale:t=>`⚠️ Live fetch failed; showing cached data (last updated ${t}). Reconnect and tap Refresh.`,
     err:m=>`Failed to fetch weather: ${m}, and no local cache. Reconnect and refresh.`,
     foot1:'Wind thresholds: <8 m/s good · 8–12 caution · 12–18 danger · >18 severe (~Beaufort 8+). Summit feels-like is low year-round, near freezing even in summer.',
-    foot2:'Sunrise probability is estimated from summit cloud cover and precipitation around sunrise — reference only. Auto-refreshes every 10 min; shows cached data on weak networks. Always check the official info below before climbing.',
+    foot2:'Sunrise probability is estimated from summit cloud cover and precipitation around sunrise — reference only. Auto-refreshes every 10 min; shows cached data on weak networks. Always check the official info below before climbing. This site uses Microsoft Clarity for anonymous usage analytics (incl. session replay) to improve the experience.',
     links:['Official Mt. Fuji Climbing','Trail opening dates','Official weather','JMA forecast','tenki.jp Mountain (Fuji)','Real-time obs (trails)']
   }
 };
@@ -661,14 +687,29 @@ function renderBodyClock(summit){
   const d=summit.daily, now=new Date(summit.current.time).getTime();
   let di=0; for(let k=0;k<d.sunrise.length;k++){if(new Date(d.sunrise[k]).getTime()>now){di=k;break;}di=k;}
   if(new Date(d.sunrise[0]).getTime()>now) di=0;
-  function rowHTML(lbl,jstStr){const b=bodyHM(jstStr,offSec),i=energyIdx(b.hf);
-    return `<div class="bc-row"><span class="bc-l">${lbl}</span><span class="bc-v">${jstStr.slice(11,16)} JST ${L().bcArrow} <b>${hm2(b)}</b> ${enBadge(b.hf)}</span><div class="bc-ad">${L().enAdvice[i]}</div></div>`;}
-  let html=rowHTML(L().bcSunrise, d.sunrise[di]);
-  const ws=bestWindows(summit);
-  if(ws.length) html+=rowHTML(L().bcWindow, ws[0].start);
-  if(tzMin(homeTZ,new Date())===Math.round(offSec/60)) html+=`<div class="bc-same">${L().bcSame}</div>`;
-  html+=`<div class="bc-note">${L().bcNote}</div>`;
-  el.innerHTML=html;
+  const srStr=d.sunrise[di], srB=bodyHM(srStr,offSec);
+  const ws=bestWindows(summit), winStr=ws.length?ws[0].start:null, winB=winStr?bodyHM(winStr,offSec):null;
+  const homeNow=new Date(Date.now()+tzMin(homeTZ,new Date())*60000), nowHf=homeNow.getUTCHours()+homeNow.getUTCMinutes()/60;
+  const cx=100,cy=100,ro=92,ri=64;
+  const polar=(r,deg)=>[cx+r*Math.sin(deg*Math.PI/180), cy-r*Math.cos(deg*Math.PI/180)];
+  let segs='';
+  for(let h=0;h<24;h++){const g=1.2,s=h*15+g,e2=(h+1)*15-g;
+    const a=polar(ro,s),b2=polar(ro,e2),c2=polar(ri,e2),d2=polar(ri,s);
+    segs+=`<path d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} A${ro} ${ro} 0 0 1 ${b2[0].toFixed(1)} ${b2[1].toFixed(1)} L${c2[0].toFixed(1)} ${c2[1].toFixed(1)} A${ri} ${ri} 0 0 0 ${d2[0].toFixed(1)} ${d2[1].toFixed(1)} Z" fill="${EN_HEX[energyIdx(h)]}" opacity="0.88"/>`;}
+  let ticks=''; [0,6,12,18].forEach(h=>{const t=polar(ro+11,h*15);ticks+=`<text x="${t[0].toFixed(1)}" y="${(t[1]+4).toFixed(1)}" text-anchor="middle" font-size="11" fill="#9fb4c9">${h}</text>`;});
+  const mk=(hf,emo)=>{const m=polar((ro+ri)/2,hf*15);return `<text x="${m[0].toFixed(1)}" y="${(m[1]+5).toFixed(1)}" text-anchor="middle" font-size="15">${emo}</text>`;};
+  let marks=mk(srB.hf,'🌅'); if(winB)marks+=mk(winB.hf,'🎯');
+  const hnd=polar(ri-6,nowHf*15);
+  const hand=`<line x1="${cx}" y1="${cy}" x2="${hnd[0].toFixed(1)}" y2="${hnd[1].toFixed(1)}" stroke="#eaf2fb" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="3.5" fill="#eaf2fb"/>`;
+  const ni=energyIdx(nowHf);
+  const center=`<text x="${cx}" y="${cy-18}" text-anchor="middle" font-size="10" fill="#9fb4c9">${L().bcNow}</text><text x="${cx}" y="${cy+3}" text-anchor="middle" font-size="20" font-weight="700" fill="#eaf2fb">${hm2({h:homeNow.getUTCHours(),m:homeNow.getUTCMinutes()})}</text><text x="${cx}" y="${cy+19}" text-anchor="middle" font-size="11" font-weight="700" fill="${EN_HEX[ni]}">${L().enLevels[ni]}</text>`;
+  const svg=`<svg viewBox="-14 -14 228 228" class="bc-svg" role="img" aria-label="body clock">${segs}${ticks}${marks}${hand}${center}</svg>`;
+  const row=(lbl,jstStr,b)=>{const i=energyIdx(b.hf);return `<div class="bc-row"><span class="bc-l">${lbl}</span> <span class="bc-v">${jstStr.slice(11,16)} JST ${L().bcArrow} <b>${hm2(b)}</b> ${enBadge(b.hf)}</span><div class="bc-ad">${L().enAdvice[i]}</div></div>`;};
+  let info=row('🌅 '+L().bcSunrise, srStr, srB);
+  if(winB)info+=row('🎯 '+L().bcWindow, winStr, winB);
+  const legend=`<div class="bc-leg">${L().enLevels.map((n,i)=>`<span><i style="background:${EN_HEX[i]}"></i>${n}</span>`).join('')}</div>`;
+  const same=tzMin(homeTZ,new Date())===Math.round(offSec/60)?`<div class="bc-same">${L().bcSame}</div>`:'';
+  el.innerHTML=`<div class="bc-wrap"><div class="bc-dial">${svg}</div><div class="bc-info">${info}${legend}${same}</div></div><div class="bc-note">${L().bcNote}</div>`;
 }
 
 function render(base,trail,summit){
@@ -692,7 +733,10 @@ function render(base,trail,summit){
 
 function setSeason(){
   const now=new Date(),m=now.getMonth()+1,day=now.getDate();
-  document.getElementById('season').textContent=((m===7)||(m===8)||(m===9&&day<=10))?L().seasonOpen:L().seasonClosed;
+  const open=((m===7)||(m===8)||(m===9&&day<=10));
+  const pill=document.getElementById('season');
+  pill.textContent=open?L().seasonOpen:L().seasonClosed;
+  pill.classList.toggle('closed-pill',!open);
 }
 
 function applyStatic(){
@@ -764,6 +808,51 @@ if('serviceWorker' in navigator){
 
 updateLangUI(); applyStatic(); setSeason(); renderTabs(); load();
 setInterval(()=>{for(const k in cache)delete cache[k];load();},10*60*1000);
+setInterval(()=>{if(LAST)renderBodyClock(LAST.summit);},60000);
+</script>
+
+<script>
+// 自定义埋点：逐模块停留时长 + 关键点击，上报到 Microsoft Clarity
+(function(){
+  function C(){return (typeof window.clarity==='function')?window.clarity:null;}
+  function tag(k,v){const c=C();if(c){try{c('set',k,v);}catch(_){}}}
+  function ev(n){const c=C();if(c){try{c('event',n);}catch(_){}}}
+  function bucket(s){if(s<10)return'0-10s';if(s<30)return'10-30s';if(s<60)return'30-60s';if(s<180)return'1-3m';if(s<300)return'3-5m';return'5m+';}
+  const MODULES=[['verdict','安全评估'],['goraiko','御来光'],['tabs','线路选择'],['trail-info','线路实况'],['cards','三高度'],['chart','24h趋势'],['windows','推荐窗口'],['daily','7天预报'],['bclock','身体时钟']];
+  const acc={},vis={}; MODULES.forEach(m=>{acc[m[0]]=0;vis[m[0]]=0;});
+  const pageStart=Date.now();
+  let flushed=false;
+  function startObs(){
+    if(!('IntersectionObserver' in window))return;
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{const id=e.target.id;
+      const vp=(e.rootBounds&&e.rootBounds.height)||window.innerHeight;
+      const need=Math.min(e.boundingClientRect.height,vp)*0.5;
+      const seen=e.isIntersecting && e.intersectionRect.height>=need;
+      if(seen){if(!vis[id])vis[id]=Date.now();}
+      else if(vis[id]){acc[id]+=Date.now()-vis[id];vis[id]=0;}
+    });},{threshold:[0,0.25,0.5,0.75,1]});
+    MODULES.forEach(m=>{const el=document.getElementById(m[0]);if(el)io.observe(el);});
+  }
+  function flush(){
+    if(flushed)return; flushed=true;
+    MODULES.forEach(m=>{if(vis[m[0]]){acc[m[0]]+=Date.now()-vis[m[0]];vis[m[0]]=0;}});
+    let top=null,topT=0;
+    MODULES.forEach(m=>{const s=Math.round(acc[m[0]]/1000);if(s>0)tag('dwell_'+m[0],bucket(s));if(acc[m[0]]>topT){topT=acc[m[0]];top=m[1];}});
+    if(top)tag('top_module',top);
+    tag('total_dwell',bucket(Math.round((Date.now()-pageStart)/1000)));
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush();});
+  window.addEventListener('pagehide',flush);
+  window.addEventListener('load',()=>{
+    startObs();
+    const bind=(id,n)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',()=>ev(n));};
+    bind('refresh','click_refresh'); bind('install','click_install');
+    const tabs=document.getElementById('tabs'); if(tabs)tabs.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('.tab');if(t)ev('switch_trail_'+(t.dataset.id||''));});
+    document.querySelectorAll('#lang span').forEach(s=>s.addEventListener('click',()=>ev('switch_lang_'+s.dataset.l)));
+    const tz=document.getElementById('tz'); if(tz)tz.addEventListener('change',()=>ev('change_tz'));
+    document.querySelectorAll('.links a').forEach(a=>a.addEventListener('click',()=>ev('click_official_link')));
+  });
+})();
 </script>
 </body>
 </html>
