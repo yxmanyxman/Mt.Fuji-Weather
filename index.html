@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>富士山实时天气 · 登山参考</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0d1b2a">
+<meta name="theme-color" content="#15273b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="富士山天气">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,8 +14,8 @@
 <meta property="og:title" content="富士山实时天气 · 登山参考">
 <meta property="og:description" content="登顶安全评估、推荐登顶窗口、御来光概率，多高度实时天气与雷暴提醒。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://yxmanyxman.github.io/Mt.Fuji-Weather/">
-<meta property="og:image" content="https://yxmanyxman.github.io/Mt.Fuji-Weather/icon-512.png">
+<meta property="og:url" content="https://fujihiker.netlify.app/">
+<meta property="og:image" content="https://fujihiker.netlify.app/icon-512.png">
 <meta name="twitter:card" content="summary">
 <!-- Microsoft Clarity 分析：把下方 CLARITY_PROJECT_ID 替换为你在 clarity.microsoft.com 创建项目后拿到的 ID -->
 <script type="text/javascript">
@@ -26,21 +26,43 @@
   })(window, document, "clarity", "script", "xegrcjkm3t");
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0d1b2a; --panel:#16263a; --panel2:#1d3148;
-    --line:#2b4359; --text:#eaf2fb; --sub:#9fb4c9; --accent:#4fc3f7;
-    --good:#34d399; --warn:#fbbf24; --bad:#f87171; --gold:#ffd166;
+    --bg:#15273b; --panel:#1d3149; --panel2:#27425d;
+    --line:#36506a; --text:#ede6d6; --sub:#a6b3c1; --muted:#8d99a8; --accent:#6fb4c4;
+    --good:#7bbf7a; --warn:#d9a23a; --bad:#d65a4e; --gold:#e6b24a;
+    --font-serif:"Shippori Mincho","Noto Serif SC","Songti SC",Georgia,"Times New Roman",serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;
-    background:linear-gradient(160deg,#0b1726,#0d1b2a 40%,#10243a);color:var(--text);
-    min-height:100vh;padding:16px;line-height:1.5}
-  .wrap{max-width:1100px;margin:0 auto;position:relative}
-  .lang{position:absolute;top:0;right:0;display:flex;gap:2px;font-size:12px;z-index:5}
+    background:
+      repeating-radial-gradient(circle at 92% 4%, transparent 0 46px, rgba(230,178,74,.045) 46px 47px, transparent 47px 92px),
+      repeating-radial-gradient(circle at 6% 96%, transparent 0 52px, rgba(111,180,196,.04) 52px 53px, transparent 53px 104px),
+      linear-gradient(165deg,#12203200,#15273b 38%,#182c44);
+    background-color:#15273b;background-attachment:fixed;
+    color:var(--text);min-height:100vh;padding:16px;line-height:1.5}
+  body::after{content:"";position:fixed;right:14px;bottom:12px;width:108px;height:108px;
+    background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2746%27%20fill%3D%27none%27%20stroke%3D%27%23e6b24a%27%20stroke-width%3D%271.4%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%2733%27%20fill%3D%27none%27%20stroke%3D%27%23e6b24a%27%20stroke-width%3D%27.7%27%2F%3E%3Cpolygon%20points%3D%2750%2C7%2056%2C50%2050%2C50%27%20fill%3D%27%23d65a4e%27%2F%3E%3Cpolygon%20points%3D%2750%2C7%2044%2C50%2050%2C50%27%20fill%3D%27%23e6b24a%27%2F%3E%3Cpolygon%20points%3D%2750%2C93%2056%2C50%2050%2C50%27%20fill%3D%27%23e6b24a%27%2F%3E%3Cpolygon%20points%3D%2750%2C93%2044%2C50%2050%2C50%27%20fill%3D%27%236fb4c4%27%2F%3E%3Cpolygon%20points%3D%277%2C50%2050%2C56%2050%2C50%27%20fill%3D%27%23e6b24a%27%2F%3E%3Cpolygon%20points%3D%277%2C50%2050%2C44%2050%2C50%27%20fill%3D%27%236fb4c4%27%2F%3E%3Cpolygon%20points%3D%2793%2C50%2050%2C56%2050%2C50%27%20fill%3D%27%236fb4c4%27%2F%3E%3Cpolygon%20points%3D%2793%2C50%2050%2C44%2050%2C50%27%20fill%3D%27%23e6b24a%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;
+    opacity:.14;pointer-events:none;z-index:0}
+  @media(max-width:760px){body::after{width:74px;height:74px;opacity:.1}}
+  .wrap{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+  h1,.verdict h2,section h3,.bc-t,.trail-head,.card .name,.goraiko .grade,.win-date,.win-time,#md-title{font-family:var(--font-serif);letter-spacing:.3px}
+  .tic{width:1.05em;height:1.05em;vertical-align:-.16em;margin-right:.42em;fill:none;stroke:var(--gold);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .srss{white-space:nowrap}
+  .srss .tic{width:.95em;height:.95em;margin-right:.22em}
+  .toprt{position:absolute;top:0;right:0;display:flex;align-items:center;gap:8px;z-index:5}
+  .lang{display:flex;gap:2px;font-size:12px}
   .lang span{cursor:pointer;color:var(--sub);padding:3px 7px;border-radius:6px}
   .lang span.on{color:var(--text);background:var(--panel2)}
-  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:6px;padding-right:64px}
+  .ibtn{background:var(--panel2);border:1px solid var(--line);border-radius:8px;width:32px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--sub);cursor:pointer}
+  .ibtn:hover{color:var(--gold);border-color:var(--gold)}
+  .ibtn.ok{color:var(--good);border-color:var(--good)}
+  .ibtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:6px;padding-right:150px}
+  @media(max-width:520px){header{padding-right:140px}}
   h1{font-size:22px;font-weight:700;letter-spacing:.5px}
   h1 .mt{color:var(--accent)}
   .meta{font-size:12.5px;color:var(--sub)}
@@ -48,10 +70,14 @@
   button{background:var(--accent);color:#06243a;border:0;border-radius:8px;
     padding:8px 14px;font-size:13.5px;font-weight:600;cursor:pointer}
   button:active{transform:translateY(1px)}
-  #install{background:var(--gold);color:#3a2a00}
+  .bar button{padding:6px 11px;font-size:12.5px;border-radius:8px}
+  .skel{background:linear-gradient(90deg,#1d3149 25%,#2b4863 50%,#1d3149 75%);background-size:300% 100%;animation:sk 1.4s linear infinite;border-radius:12px}
+  @keyframes sk{0%{background-position:150% 0}100%{background-position:-150% 0}}
   .updated{font-size:12.5px;color:var(--sub)}
-  .season{font-size:12.5px;background:#1d3148;border:1px solid var(--line);
-    border-radius:8px;padding:7px 12px;color:var(--sub)}
+  .season{font-size:12.5px;background:rgba(123,191,122,.10);border:1px solid rgba(123,191,122,.42);
+    border-radius:20px;padding:6px 13px;color:var(--text)}
+  .season .sdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);
+    margin-right:7px;vertical-align:0;box-shadow:0 0 0 3px rgba(123,191,122,.18)}
 
   .thunder{background:rgba(248,113,113,.18);border:1px solid var(--bad);border-radius:12px;
     padding:11px 14px;font-size:13.5px;font-weight:600;color:#fff;display:none;margin-bottom:14px}
@@ -110,10 +136,31 @@
   .md-chg.w{background:rgba(248,113,113,.14);color:#fff}
   .md-chg.g{background:rgba(52,211,153,.14);color:#fff}
   #dayquote{margin:6px 0 12px}
+  #gearcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px}
+  .gear-h{font-size:13.5px;font-weight:700;margin-bottom:9px}
+  .gear-sec{margin-top:12px}
+  .gear-sech{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .gear-must{border-left:3px solid var(--gold);padding-left:11px}
+  .gear-must .gear-sech{color:var(--gold)}
+  .gear-li{font-size:12px;color:var(--muted);line-height:1.4;padding:2.5px 14px 2.5px 17px;position:relative}
+  .gear-li b{color:var(--text);font-weight:600}
+  .gear-li:before{content:'☐';position:absolute;left:0;top:2px;color:#5b6b80}
+  .gear-must .gear-li:before{content:'✓';color:var(--gold);font-weight:700}
+  .gear-rec{display:grid;grid-template-columns:1fr 1fr;column-gap:8px}
+  @media(max-width:600px){.gear-rec{grid-template-columns:1fr}}
+  .gear-note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45;opacity:.85}
+  .gear-warn{font-size:11.5px;color:#ffc9c9;background:rgba(255,90,90,.08);border-radius:8px;padding:7px 10px;margin-top:11px;line-height:1.5}
   .md-quote{padding:8px 12px;border-left:3px solid var(--gold);background:var(--panel2);border-radius:0 8px 8px 0;font-size:12px;line-height:1.6}
+  .md-permit{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:9px 14px;background:rgba(255,209,102,.12);border:1px solid var(--gold);border-radius:10px;color:var(--gold);font-size:13px;font-weight:700;text-decoration:none}
+  .md-permit:hover{background:rgba(255,209,102,.22)}
+  .md-permit .ps{font-weight:400;font-size:11.5px;color:var(--muted)}
+  .md-permit-note{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.5}
   .md-q{font-style:italic;color:var(--text)}
   .md-by{color:var(--sub);font-size:11px;margin-left:8px;white-space:nowrap}
-  tr.md-hl td{background:rgba(79,195,247,.12)}
+  tr.md-hl td{background:rgba(111,180,196,.14)}
+  .maintabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .mtab{background:transparent;border:0;border-bottom:2px solid transparent;color:var(--sub);font-size:14px;font-weight:600;padding:9px 14px;border-radius:0;cursor:pointer}
+  .mtab.active{color:var(--text);border-bottom-color:var(--accent)}
   .trail-head{font-size:15px;font-weight:700;margin:4px 0 10px}
   .zone-cap{font-size:12.5px;color:var(--sub);font-weight:600;margin:16px 0 12px;padding-top:10px;border-top:1px dashed var(--line)}
   .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
@@ -128,8 +175,8 @@
     padding:16px;margin-bottom:18px}
   .trail-info .tmeta{font-size:12.5px;color:var(--sub);margin-bottom:12px}
   .trail-info .tmeta b{color:var(--text)}
-  .focus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:6px}
-  @media(max-width:760px){.focus{grid-template-columns:repeat(2,1fr)}}
+  .focus{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:6px}
+  @media(max-width:760px){.focus{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .fbox{background:var(--panel2);border-radius:10px;padding:12px;text-align:center;border:1px solid transparent}
   .fbox .fk{font-size:12px;color:var(--sub)}
   .fbox .fv{font-size:22px;font-weight:700;margin-top:3px}
@@ -137,7 +184,7 @@
   .fbox.alert{border-color:var(--bad);background:rgba(248,113,113,.12)}
   .fbox.warnb{border-color:var(--warn);background:rgba(251,191,36,.10)}
 
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:20px}
   @media(max-width:760px){.grid{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
   .card .elev{font-size:12.5px;color:var(--sub)}
@@ -147,12 +194,12 @@
   .card .temp{font-size:34px;font-weight:700}
   .card .cond{font-size:13px;color:var(--sub)}
   .card .feels{font-size:12.5px;color:var(--sub)}
-  .rows{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:13px}
-  .row{display:flex;justify-content:space-between;background:var(--panel2);
-    border-radius:8px;padding:7px 9px}
-  .row .k{color:var(--sub)}
-  .row .v{font-weight:600}
-  .pill{font-size:11px;padding:1px 7px;border-radius:20px;font-weight:600;margin-left:6px}
+  .rows{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;font-size:13px}
+  .row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 6px;background:var(--panel2);
+    border-radius:8px;padding:7px 9px;min-width:0}
+  .row .k{color:var(--sub);white-space:nowrap}
+  .row .v{font-weight:600;white-space:nowrap;display:inline-flex;align-items:center}
+  .pill{font-size:10px;padding:1px 6px;border-radius:20px;font-weight:600;margin-left:4px;white-space:nowrap}
   .p-good{background:rgba(52,211,153,.2);color:var(--good)}
   .p-warn{background:rgba(251,191,36,.2);color:var(--warn)}
   .p-bad{background:rgba(248,113,113,.22);color:var(--bad)}
@@ -182,11 +229,15 @@
   td.day{text-align:left;font-weight:600}
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px}
 
-  footer{margin-top:24px;font-size:11.5px;color:var(--sub);text-align:center;line-height:1.7}
+  footer{margin-top:26px;text-align:center}
+  .foot-note{max-width:660px;margin:0 auto;font-size:11px;color:var(--muted);line-height:1.6}
+  .foot-note p{margin:4px 0}
+  .fmini{max-width:660px;margin:11px auto 0;font-size:10.5px;color:var(--muted);opacity:.72;line-height:1.5}
+  .foot-div{max-width:660px;height:1px;background:var(--line);opacity:.55;margin:17px auto 0}
   @media(max-width:560px){
     body{padding:12px}
     h1{font-size:20px}
-    header{padding-right:58px}
+    header{padding-right:144px}
     .lang{font-size:13px}
     .lang span{padding:4px 9px}
     table{font-size:12.5px}
@@ -195,26 +246,33 @@
     .goraiko .pct{font-size:31px}
     .win-time{font-size:15px}
     .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
-    .links a{font-size:12px;padding:6px 10px}
+    .links a{font-size:11px;padding:5px 9px}
   }
-  .links{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;justify-content:flex-start;gap:10px;margin:12px 0 4px;padding-bottom:6px}
-  .links a{color:var(--accent);text-decoration:none;background:var(--panel);white-space:nowrap;flex:0 0 auto;
-    border:1px solid var(--line);border-radius:20px;padding:6px 13px;font-size:12.5px;font-weight:600}
-  .links a:hover{background:var(--panel2)}
+  .links{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0 4px;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .links::-webkit-scrollbar{height:5px}
+  .links::-webkit-scrollbar-track{background:transparent}
+  .links::-webkit-scrollbar-thumb{background:var(--line);border-radius:20px}
+  .links::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+  .links-row{display:flex;gap:8px 10px;width:max-content;margin:0 auto;padding:0 16px}
+  .links a{color:var(--sub);text-decoration:none;background:var(--panel2);white-space:nowrap;
+    border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:600}
+  .links a:hover{color:var(--gold);border-color:var(--gold)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="lang" id="lang"><span data-l="zh">中</span><span data-l="en">EN</span></div>
+  <div class="toprt">
+    <button id="install" class="ibtn acc" style="display:none" aria-label="安装到主屏"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M8 11l4 4 4-4M5 20h14"/></svg></button>
+    <button id="refresh" class="ibtn" aria-label="刷新"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.1-5.2"/><path d="M19.8 4.5v4h-4"/></svg></button>
+    <button id="share" class="ibtn" aria-label="分享"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="12" r="2.4"/><circle cx="17" cy="6" r="2.4"/><circle cx="17" cy="18" r="2.4"/><path d="M8.7 10.9 14.8 7.1M8.7 13.1l6.1 3.8"/></svg></button>
+    <div class="lang" id="lang"><span data-l="zh">中</span><span data-l="en">EN</span></div>
+  </div>
   <header>
     <h1 id="h1"></h1>
     <span class="meta" id="meta"></span>
   </header>
 
   <div class="bar">
-    <button id="refresh"></button>
-    <button id="install" style="display:none"></button>
-    <button id="share" style="background:var(--panel2);color:var(--text);border:1px solid var(--line)"></button>
     <span class="updated" id="updated"></span>
     <span class="season" id="season"></span>
   </div>
@@ -223,6 +281,12 @@
   <div class="stale" id="stale"></div>
   <div class="err" id="err"></div>
 
+  <div class="maintabs" id="maintabs">
+    <button class="mtab active" id="mtab-weather" data-v="weather"></button>
+    <button class="mtab" id="mtab-day" data-v="day"></button>
+  </div>
+
+  <div id="view-weather">
   <div class="toprow">
     <div class="goraiko" id="goraiko">
       <div class="lbl" id="gk-lbl"></div>
@@ -236,18 +300,12 @@
     </div>
   </div>
 
-  <div class="myday" id="myday">
-    <div class="md-head"><span class="bc-t" id="md-title"></span><select id="md-date"></select></div>
-    <div id="dayquote"></div>
-    <div id="md-body"></div>
-  </div>
-
   <div class="trail-head" id="trail-head"></div>
   <div class="tabs" id="tabs"></div>
 
   <div class="trail-head" id="trail-sub" style="font-size:13px;color:var(--sub);font-weight:600;margin-top:4px"></div>
-  <div class="trail-info" id="trail-info"></div>
-  <div class="grid" id="cards"></div>
+  <div class="trail-info" id="trail-info"><div class="skel" style="height:118px"></div></div>
+  <div class="grid" id="cards"><div class="skel" style="height:190px"></div><div class="skel" style="height:190px"></div><div class="skel" style="height:190px"></div></div>
 
   <section>
     <div class="chart-card">
@@ -266,24 +324,39 @@
     <h3 id="h-daily"></h3>
     <div class="table-wrap"><table id="daily"><tbody><tr><td></td></tr></tbody></table></div>
   </section>
+  </div><!-- /view-weather -->
+
+  <div id="view-day" style="display:none">
+  <div class="myday" id="myday">
+    <div class="md-head"><span class="bc-t" id="md-title"></span><select id="md-date"></select></div>
+    <div id="dayquote"></div>
+    <div id="md-body"></div>
+  </div>
+
+  <div id="gearcard"></div>
 
   <div class="bclock" id="bclock">
     <div class="bc-head"><span class="bc-t" id="bc-title"></span><select id="tz" class="tzsel"></select></div>
     <div id="bc-body"></div>
   </div>
+  </div><!-- /view-day -->
 
   <footer>
-    <div id="foot1"></div>
-    <div id="foot2"></div>
-    <div id="foot3" style="margin-top:6px"></div>
-    <div class="links">
+    <div class="foot-note">
+      <p id="foot1"></p>
+      <p id="foot2"></p>
+      <p id="foot2b"></p>
+    </div>
+    <p class="fmini" id="foot3"></p>
+    <div class="foot-div"></div>
+    <div class="links"><div class="links-row">
       <a id="lnk0" href="https://www.fujisan-climb.jp/" target="_blank" rel="noopener"></a>
       <a id="lnk1" href="https://www.fujisan-climb.jp/season/" target="_blank" rel="noopener"></a>
       <a id="lnk2" href="https://www.fujisan-climb.jp/weather/" target="_blank" rel="noopener"></a>
       <a id="lnk3" href="https://www.jma.go.jp/bosai/forecast/" target="_blank" rel="noopener"></a>
       <a id="lnk4" href="https://tenki.jp/mountain/famous100/5/25/150.html" target="_blank" rel="noopener"></a>
       <a id="lnk5" href="https://imafuji.earth/" target="_blank" rel="noopener"></a>
-    </div>
+    </div></div>
   </footer>
 </div>
 
@@ -317,6 +390,7 @@ const TRAILS={
 };
 let currentTrail='yoshida';
 const TRAIL_ASPECT={yoshida:0,fujinomiya:180,subashiri:90,gotemba:135}; // 山体朝向(外法线)：北/南/东/东南
+const PERMIT={yoshida:'https://www.asoview.com/channel/tickets/r0Gpg8xllI/'};
 let summitWindDir=null;
 function dirName(d){return L().dirs[Math.round(d/45)%8];}
 function windRel(wd,asp){let x=Math.abs(wd-asp)%360;if(x>180)x=360-x;return x<60?'windward':x>120?'leeward':'cross';}
@@ -336,7 +410,7 @@ const TZLIST=[
 ['Australia/Adelaide','阿德莱德 UTC+9:30'],['Australia/Sydney','悉尼 Sydney UTC+10'],['Pacific/Noumea','新喀里多尼亚 UTC+11'],
 ['Pacific/Auckland','奥克兰 Auckland UTC+12'],['UTC','UTC']];
 const EN_MAP=[2,3,3,3,3,2,2,1,0,0,0,0,1,2,2,1,1,0,0,0,1,1,2,2];
-const EN_HEX=['#34d399','#5ec8ff','#fbbf24','#f87171'];
+const EN_HEX=['#7bbf7a','#6fb4c4','#d9a23a','#d65a4e'];
 const EN_FACE=['😄','🙂','😪','😴'];
 const QUOTES=[
  {zh:'我们征服的不是高山，而是我们自己。',en:'It is not the mountain we conquer but ourselves.',byZh:'埃德蒙·希拉里',byEn:'Edmund Hillary'},
@@ -379,11 +453,11 @@ const I18N={
   zh:{
     htmlLang:'zh-CN', loc:'zh-CN',
     title:'🗻 <span class="mt">富士山</span> 实时天气',
-    meta:'登山参考 · 数据源 Open-Meteo · 日本时间 (JST)',
+    meta:'出发前最后确认 · 登顶安全 · 御来光概率 · 7 天监控',
     refresh:'↻ 刷新', install:'📲 安装到主屏',
     loading:'加载中…', updating:'刷新中…', loadFail:'加载失败', analyzing:'分析中…',
     updatedAt:t=>'更新于 '+t+' (JST)',
-    seasonOpen:'🟢 当前为开山季（约7月–9月上旬），各登山道开放，注意各道具体开放日期。',
+    seasonOpen:'当前为开山季（约7月–9月上旬），各登山道开放，注意各道具体开放日期。',
     seasonClosed:'🔴 当前为闭山期，多数登山道及山小屋关闭，强烈不建议攀登。',
     gkLbl:'🌅 御来光（山顶日出）观赏概率',
     gkGrades:['极佳','较好','一般','较低','渺茫'],
@@ -408,10 +482,19 @@ const I18N={
     enAdvice:['精力较好','尚可','警觉性偏低，注意','困倦低谷，夜行格外当心失误与失温'],
     bcNote:'基于通用昼夜节律的粗略估算，个体差异大，仅供参考（非医疗建议）。',
     share:'🔗 分享', shareCopied:'已复制链接',
+    tabWeather:'🌤️ 实时天气', tabDay:'🗓 我的登山日',
     mdTitle:'🗓 我的登山日', mdPick:'选择登山日',
     mdPickHint:'选择你计划登顶的日期：置顶查看当天天气、御来光、日出倒计时与较上次的变动。',
     mdSunIn:'距日出', mdSunrise:'日出', mdWindowDay:'当天窗口', mdNoWindowDay:'当天暂无明显适宜窗口', mdGorai:'御来光概率',
     mdNew:'已记录本次预报，下次打开即可对比变动。', mdVs:'较上次查看', mdBetter:'↓ 较上次变好', mdWorse:'↑ 较上次变差', mdSame:'≈ 与上次基本一致',
+    gearTitle:'🧥 装备 / 穿着速查', gearSep:'、', gearSummit:c=>`当天山顶最低约 ${c}°`,
+    permitBuy:'在线购买入山证（吉田线）', permitFee:'¥4,000 · 当天可购', permitOther:'🎫 本线路入山证请通过官方预约系统购买（¥4,000）',
+    gearMustH:'必带 · 登山口强制检查',
+    gearMust:['登山鞋：护脚踝、防滑（运动鞋/凉鞋拒入山）','保暖衣物：冲锋衣/抓绒，应对近 0℃','雨具：上下分体雨衣最佳'],
+    gearMustNote:'吉田线五合目强制查验这 3 项，缺一被劝返；其他线路同样建议。',
+    gearRecH:'强烈建议',
+    gearRec:['头灯：冲顶必备、充满电','手套：保暖＋抓岩','现金/硬币：厕所 200–300 日元/次','水 1.5–2 L＋行动粮','防晒：帽、墨镜、防晒霜、唇膏','速干内层＋可增减多层','垃圾袋：自行带下山','可选：氧气罐、登山杖'],
+    gearWarn:{cold:'体感低、谨防失温，加厚保暖层/手套',wind:'阵风强，注意平衡、避开强风时段',thunder:'有雷暴，避开山脊与山顶',snow:'可能积雪/结冰，注意防滑'},
     durFmt:(H,M)=>(H>0?H+'小时':'')+M+'分', ago:t=>t+'前',
     rainLevels:['无降雨','微量','小雨','中雨','大雨','暴雨'],
     rainSpread:'平铺不排水约', rainLand:cm=>cm<0.5?'刚打湿地面':cm<1.5?'没过鞋底':cm<4?'浸湿鞋面、约到脚踝':cm<10?'没过脚踝、登山道易积水':cm<25?'到小腿、路径或成水流':'到膝盖、危险，建议改期',
@@ -426,30 +509,31 @@ const I18N={
     cWind:'风速', cGust:'阵风', cDir:'风向', cVis:'能见度', cRain:'降雨量', cCloud:'云量',
     tTrailhead:'起点海拔', tDifficulty:'难度', tVis:'能见度', tRainNow:'当前降雨量',
     tPrecip:'降水概率', tRainToday:'今日累计降雨', tTempFeels:'气温/体感', tAtHead:'起点', tCloud:'云量',
-    hTrend:'未来 24 小时 · 山顶趋势',
+    hTrend:'📈 未来 24 小时 · 山顶趋势',
     legend:'红线=阵风(m/s) · 蓝柱=降水概率(%) · 橙线=体感温度(°C) · 红色阴影=雷暴时段。阵风持续 >12 m/s 时强烈不建议登顶。',
     cPrecip:'降水概率(%)', cGustL:'阵风(m/s)', cFeelsL:'体感温度(°C)', cThunder:'雷暴时段', axWind:'风 m/s', axPrecip:'降水%',
     hWindows:'🎯 推荐登顶窗口 · 未来 7 天（山顶 · 各线路通用）',
     winNone:'未来 7 天暂无明显适宜登顶的连续时段（风力、降水或能见度均需留意），建议持续关注或调整计划。',
     winBest:'✦ 最佳', winSunrise:'🌅 可看御来光',
     winSub:(len,g,clear)=>`约 ${len} 小时 · 阵风≤${g} m/s · ${clear?'多为晴/少云':'天气尚可、视情况而定'}`,
-    hDaily:'未来 7 天 · 山顶预报（各线路通用）',
+    hDaily:'📅 未来 7 天 · 山顶预报（各线路通用）',
     dHead:['日期','天气','高/低温','降水概率','降雨量','最大阵风','日出/日落'], today:'今天',
     stale:t=>`⚠️ 实时获取失败，当前为缓存数据（最后成功更新 ${t}）。联网后点「刷新」即可更新。`,
     err:m=>`获取天气失败：${m}，且本地无缓存数据。请联网后点击刷新。`,
-    foot1:'风速阈值：<8 m/s 良好 · 8–12 注意 · 12–18 危险 · >18 极度危险（约 8 级以上）。山顶体感常年偏低，夏季亦可接近冰点。',
-    foot2:'御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。每 10 分钟自动刷新，弱网时显示上次缓存数据；登山前请务必核对下方官方信息。',
-    foot3:'本站使用 Microsoft Clarity 收集匿名访问统计以改进体验。',
+    foot1:'风速阈值：<8 m/s 良好 · 8–12 注意 · 12–18 危险 · >18 极度危险（约 8 级以上）。',
+    foot2:'御来光概率为依据山顶日出时段云量与降水的估算，仅供参考。登山前请务必核对下方官方信息。',
+    foot2b:'每 10 分钟自动刷新，弱网时显示上次缓存数据。数据源 Open-Meteo · 时间为日本时间 (JST)。',
+    foot3:'本站收集匿名访问统计以改进体验，不涉及个人身份信息。',
     links:['富士登山官方网站','各登山道开放期间','官方天气信息','日本气象厅 预报','tenki.jp 登山天気 (富士山)','实时观测 (各登山道)']
   },
   en:{
     htmlLang:'en', loc:'en-US',
     title:'🗻 <span class="mt">Mt. Fuji</span> Live Weather',
-    meta:'For climbers · data: Open-Meteo · Japan time (JST)',
+    meta:'Final check before you climb · summit safety · sunrise odds · 7-day watch',
     refresh:'↻ Refresh', install:'📲 Install',
     loading:'Loading…', updating:'Updating…', loadFail:'Load failed', analyzing:'Analyzing…',
     updatedAt:t=>'Updated '+t+' (JST)',
-    seasonOpen:'🟢 Climbing season (~Jul–early Sep); trails open — check each trail’s exact dates.',
+    seasonOpen:'Climbing season (~Jul–early Sep); trails open — check each trail’s exact dates.',
     seasonClosed:'🔴 Off-season; most trails and huts closed — climbing strongly discouraged.',
     gkLbl:'🌅 Goraiko (summit sunrise) viewing chance',
     gkGrades:['Excellent','Good','Fair','Low','Poor'],
@@ -474,10 +558,19 @@ const I18N={
     enAdvice:['good energy','fairly alert','lower alertness, take care','circadian trough — extra care on night climbs'],
     bcNote:'Rough estimate from a generic circadian rhythm; individual variation is large — reference only (not medical advice).',
     share:'🔗 Share', shareCopied:'Link copied',
+    tabWeather:'🌤️ Weather', tabDay:'🗓 My climb day',
     mdTitle:'🗓 My climb day', mdPick:'Pick a day',
     mdPickHint:'Pick your planned summit date to pin its weather, sunrise countdown and changes since last view.',
     mdSunIn:'sunrise in', mdSunrise:'Sunrise', mdWindowDay:'Window that day', mdNoWindowDay:'No clear window that day', mdGorai:'Sunrise chance',
     mdNew:'This forecast is recorded — changes will show on your next visit.', mdVs:'vs last view', mdBetter:'↓ improved', mdWorse:'↑ worse', mdSame:'≈ about the same',
+    gearTitle:'🧥 Gear / clothing check', gearSep:', ', gearSummit:c=>`summit low ~${c}° that day`,
+    permitBuy:'Buy entry permit online (Yoshida)', permitFee:'¥4,000 · same-day OK', permitOther:'🎫 Buy this route’s permit via the official reservation system (¥4,000)',
+    gearMustH:'Required · trailhead check',
+    gearMust:['Hiking boots: ankle support & grip (no sneakers/sandals)','Cold-weather clothing: hardshell/fleece, for near-0℃','Rain gear: separate jacket + pants best'],
+    gearMustNote:'Yoshida enforces these 3 at the 5th station — missing any = turned back; advised on every route.',
+    gearRecH:'Strongly recommended',
+    gearRec:['Headlamp: a must for summiting, charged','Gloves: warmth + gripping rock','Cash/coins: toilets ¥200–300 each','Water 1.5–2 L + snacks','Sun: hat, shades, sunscreen, lip balm','Quick-dry base + adjustable layers','Trash bag: pack out your rubbish','Optional: oxygen can, trekking pole'],
+    gearWarn:{cold:'cold feels-like — hypothermia risk; add insulation/gloves',wind:'strong gusts — mind balance, avoid windy windows',thunder:'thunderstorms — avoid ridges & summit',snow:'possible snow/ice — watch footing'},
     durFmt:(H,M)=>(H>0?H+'h ':'')+M+'m', ago:t=>t+' ago',
     rainLevels:['No rain','Trace','Light','Moderate','Heavy','Torrential'],
     rainSpread:'spread evenly ≈', rainLand:cm=>cm<0.5?'barely wets the ground':cm<1.5?'over the sole':cm<4?'soaks shoes, ~ankle':cm<10?'over the ankle, trail pools':cm<25?'up to the calf, runoff':'up to the knee — postpone',
@@ -492,20 +585,21 @@ const I18N={
     cWind:'Wind', cGust:'Gust', cDir:'Dir', cVis:'Visibility', cRain:'Rain', cCloud:'Cloud',
     tTrailhead:'Trailhead', tDifficulty:'Difficulty', tVis:'Visibility', tRainNow:'Rain now',
     tPrecip:'Precip prob', tRainToday:'Rain today', tTempFeels:'Temp/Feels', tAtHead:'trailhead', tCloud:'Cloud',
-    hTrend:'Next 24 h · Summit trend',
+    hTrend:'📈 Next 24 h · Summit trend',
     legend:'Red=gusts (m/s) · Blue bars=precip prob (%) · Orange=feels-like (°C) · Red band=thunderstorm hours. Sustained gusts >12 m/s: climbing not advised.',
     cPrecip:'Precip prob (%)', cGustL:'Gusts (m/s)', cFeelsL:'Feels-like (°C)', cThunder:'Thunderstorm', axWind:'Wind m/s', axPrecip:'Precip %',
     hWindows:'🎯 Recommended climb windows · Next 7 days (summit · all trails)',
     winNone:'No clearly suitable continuous climb window in the next 7 days (wind, precipitation or visibility all need watching). Keep monitoring or adjust plans.',
     winBest:'✦ Best', winSunrise:'🌅 Sunrise viewable',
     winSub:(len,g,clear)=>`~${len} h · gusts ≤${g} m/s · ${clear?'mostly clear':'fair — check conditions'}`,
-    hDaily:'7-day summit forecast (all trails)',
+    hDaily:'📅 7-day summit forecast (all trails)',
     dHead:['Date','Weather','Hi/Lo','Precip%','Rain','Max gust','Sunrise/Sunset'], today:'Today',
     stale:t=>`⚠️ Live fetch failed; showing cached data (last updated ${t}). Reconnect and tap Refresh.`,
     err:m=>`Failed to fetch weather: ${m}, and no local cache. Reconnect and refresh.`,
-    foot1:'Wind thresholds: <8 m/s good · 8–12 caution · 12–18 danger · >18 severe (~Beaufort 8+). Summit feels-like is low year-round, near freezing even in summer.',
-    foot2:'Sunrise probability is estimated from summit cloud cover and precipitation around sunrise — reference only. Auto-refreshes every 10 min; shows cached data on weak networks. Always check the official info below before climbing.',
-    foot3:'This site uses Microsoft Clarity for anonymous usage analytics to improve the experience.',
+    foot1:'Wind thresholds: <8 m/s good · 8–12 caution · 12–18 danger · >18 severe (~Beaufort 8+).',
+    foot2:'Sunrise probability is estimated from summit cloud cover and precipitation around sunrise — reference only. Always check the official info below before climbing.',
+    foot2b:'Auto-refreshes every 10 min; shows cached data on weak networks. Data: Open-Meteo · times in Japan time (JST).',
+    foot3:'This site collects anonymous usage statistics to improve the experience; no personal data.',
     links:['Official Mt. Fuji Climbing','Trail opening dates','Official weather','JMA forecast','tenki.jp Mountain (Fuji)','Real-time obs (trails)']
   }
 };
@@ -520,6 +614,18 @@ function windLbl(ms){const i=ms<8?0:ms<12?1:ms<18?2:3;return L().windLevels[i];}
 function fmtDir(d){return L().dirs[Math.round(d/45)%8]+L().windSuffix;}
 function hourIdx(d){const t=d.current.time;let i=d.hourly.time.findIndex(x=>x===t);return i<0?0:i;}
 function rainIdx(mm){if(mm<=0)return 0;if(mm<1)return 1;if(mm<10)return 2;if(mm<25)return 3;if(mm<50)return 4;return 5;}
+function gearList(coldMin,gustMax,pop,rainSum,code){
+  const items=['shell','insul','hat','headlamp','water','sun'], warns=[];
+  const precip = pop>=50 || rainSum>0 || (code>=51&&code<=67) || (code>=80&&code<=86);
+  const snow = (code>=71&&code<=77)||code===85||code===86;
+  if(coldMin<=0){items.splice(2,0,'down','wgloves');warns.push('cold');}
+  else if(coldMin<=5&&gustMax>=10){items.splice(2,0,'wgloves');warns.push('cold');}
+  if(precip)items.push('rain');
+  if(gustMax>=12)warns.push('wind');
+  if(snow)warns.push('snow');
+  if(code>=95)warns.push('thunder');
+  return {items,warns};
+}
 
 const cache={};
 const LSK='fujiwx_';
@@ -578,18 +684,12 @@ function renderTrailInfo(T,d){
   const gcls=windCls(c.wind_gusts_10m);
   return `<div class="tmeta">
       ${T.icon} <b>${T.name[lang]}</b> · ${L().tTrailhead} <b>${T.elev} m</b> · ${T.side[lang]} · ${L().tDifficulty}：<b>${T.diff[lang]}</b> · ${T.huts[lang]}<br>${T.desc[lang]}</div>
-    ${summitWindDir!=null?`<div class="md-line" style="margin:0 0 10px">${L().trailWind(dirName(summitWindDir),L()[windRel(summitWindDir,TRAIL_ASPECT[currentTrail])])}</div>`:''}
+    ${summitWindDir!=null?`<div class="md-line" style="margin:0 0 10px">${iconize(L().trailWind(dirName(summitWindDir),L()[windRel(summitWindDir,TRAIL_ASPECT[currentTrail])]))}</div>`:''}
     <div class="focus">
       <div class="fbox ${visCls}"><div class="fk">${L().tVis}</div><div class="fv">${visKm}</div><div class="fu">km</div></div>
       <div class="fbox ${rainCls}"><div class="fk">${L().tRainNow}</div><div class="fv">${c.precipitation.toFixed(1)}</div><div class="fu">mm/h</div></div>
       <div class="fbox ${popCls}"><div class="fk">${L().tPrecip}</div><div class="fv">${pop??'—'}</div><div class="fu">%</div></div>
       <div class="fbox"><div class="fk">${L().tRainToday}</div><div class="fv">${todayRain.toFixed(1)}</div><div class="fu">mm</div></div>
-    </div>
-    <div class="focus" style="margin-top:10px">
-      <div class="fbox"><div class="fk">${L().tTempFeels}</div><div class="fv">${Math.round(c.temperature_2m)}°/${Math.round(c.apparent_temperature)}°</div><div class="fu">${L().tAtHead}</div></div>
-      <div class="fbox"><div class="fk">${L().cWind}</div><div class="fv">${c.wind_speed_10m.toFixed(0)}</div><div class="fu">m/s</div></div>
-      <div class="fbox"><div class="fk">${L().cGust}</div><div class="fv">${c.wind_gusts_10m.toFixed(0)}<span class="pill ${gcls}" style="margin-left:4px">${windLbl(c.wind_gusts_10m)}</span></div><div class="fu">m/s</div></div>
-      <div class="fbox"><div class="fk">${L().tCloud}</div><div class="fv">${c.cloud_cover}</div><div class="fu">%</div></div>
     </div>`;
 }
 
@@ -677,15 +777,19 @@ function drawChart(summit){
     thr.push(h.weather_code[i]>=95?100:null);}
   if(chart)chart.destroy();
   chart=new Chart(document.getElementById('chart'),{data:{labels,datasets:[
-    {type:'bar',label:L().cThunder,data:thr,yAxisID:'y1',grouped:false,backgroundColor:'rgba(248,113,113,.22)',borderWidth:0,barPercentage:1,categoryPercentage:1,order:4},
-    {type:'bar',label:L().cPrecip,data:pop,yAxisID:'y1',backgroundColor:'rgba(79,195,247,.35)',borderRadius:3,order:3},
-    {type:'line',label:L().cGustL,data:gust,yAxisID:'y',borderColor:'#f87171',backgroundColor:'#f87171',tension:.3,pointRadius:0,borderWidth:2,order:1},
-    {type:'line',label:L().cFeelsL,data:feels,yAxisID:'y2',borderColor:'#fbbf24',backgroundColor:'#fbbf24',tension:.3,pointRadius:0,borderWidth:2,borderDash:[4,3],order:2}]},
+    {type:'bar',label:L().cThunder,data:thr,yAxisID:'y1',grouped:false,backgroundColor:'rgba(214,90,78,.25)',borderWidth:0,barPercentage:1,categoryPercentage:1,order:4},
+    {type:'bar',label:L().cPrecip,data:pop,yAxisID:'y1',backgroundColor:'rgba(111,180,196,.38)',borderRadius:3,order:3},
+    {type:'line',label:L().cGustL,data:gust,yAxisID:'y',borderColor:'#d65a4e',backgroundColor:'#d65a4e',tension:.3,pointRadius:0,borderWidth:2,order:1},
+    {type:'line',label:L().cFeelsL,data:feels,yAxisID:'y2',borderColor:'#d9a23a',backgroundColor:'#d9a23a',tension:.3,pointRadius:0,borderWidth:2,borderDash:[4,3],order:2}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-    plugins:{legend:{labels:{color:'#9fb4c9',boxWidth:14,font:{size:11}}}},
-    scales:{x:{ticks:{color:'#9fb4c9',maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{color:'rgba(255,255,255,.05)'}},
-      y:{position:'left',title:{display:true,text:L().axWind,color:'#f87171'},ticks:{color:'#9fb4c9'},grid:{color:'rgba(255,255,255,.06)'}},
-      y1:{position:'right',min:0,max:100,title:{display:true,text:L().axPrecip,color:'#4fc3f7'},ticks:{color:'#9fb4c9'},grid:{display:false}},
+    plugins:{legend:{labels:{color:'#a6b3c1',usePointStyle:true,pointStyle:'rect',boxWidth:11,boxHeight:11,font:{size:11}}},
+      tooltip:{backgroundColor:'rgba(29,49,73,.97)',borderColor:'#3d5a76',borderWidth:1,cornerRadius:10,padding:11,
+        titleColor:'#ede6d6',bodyColor:'#dfe6ee',titleFont:{size:12.5,weight:'700'},bodyFont:{size:12},
+        boxPadding:5,caretSize:6,displayColors:true,usePointStyle:true,boxWidth:11,boxHeight:11,multiKeyBackground:'#1d3149',
+        callbacks:{labelColor:(ctx)=>{const d=ctx.dataset,c=d.borderColor||d.backgroundColor;return {backgroundColor:c,borderColor:c,borderWidth:0};},labelPointStyle:()=>({pointStyle:'rect',rotation:0})}}},
+    scales:{x:{ticks:{color:'#a6b3c1',maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{color:'rgba(237,230,214,.06)'}},
+      y:{position:'left',title:{display:true,text:L().axWind,color:'#d65a4e'},ticks:{color:'#a6b3c1'},grid:{color:'rgba(237,230,214,.07)'}},
+      y1:{position:'right',min:0,max:100,title:{display:true,text:L().axPrecip,color:'#6fb4c4'},ticks:{color:'#a6b3c1'},grid:{display:false}},
       y2:{display:false}}}});
 }
 
@@ -720,7 +824,7 @@ function drawWindows(summit){
     const sameDay=s.toDateString()===e.toDateString();
     const t2=(sameDay?'':e.toLocaleDateString(loc(),{month:'numeric',day:'numeric'})+' ')+e.toLocaleTimeString(loc(),{hour:'2-digit',minute:'2-digit'});
     return `<div class="win${idx===0?' best':''}">
-      <div class="win-h"><span class="win-date">${dl}</span>${idx===0?`<span class="win-tag" style="background:rgba(52,211,153,.2);color:var(--good)">${L().winBest}</span>`:''}${w.hasSunrise?`<span class="win-tag">${L().winSunrise}</span>`:''}</div>
+      <div class="win-h"><span class="win-date">${dl}</span>${idx===0?`<span class="win-tag" style="background:rgba(52,211,153,.2);color:var(--good)">${L().winBest}</span>`:''}${w.hasSunrise?`<span class="win-tag">${iconize(L().winSunrise)}</span>`:''}</div>
       <div class="win-time">${t1} – ${t2}</div>
       <div class="win-sub">${L().winSub(w.len,Math.ceil(w.maxG),w.clear)}</div>
       <div class="win-sub">${L().bcBody} ${hm2(bw)} ${enBadge(bw.hf)}</div>
@@ -740,7 +844,7 @@ function drawDaily(summit){
       <td>${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°</td>
       <td>${d.precipitation_probability_max[i]??'—'}%</td><td>${d.precipitation_sum[i].toFixed(1)} mm${d.precipitation_sum[i]>0?' · '+L().rainLevels[rainIdx(d.precipitation_sum[i])]:''}</td>
       <td>${d.wind_gusts_10m_max[i].toFixed(0)} m/s <span class="pill ${gcls}">${windLbl(d.wind_gusts_10m_max[i])}</span></td>
-      <td>🌅${sr} 🌇${ss}</td></tr>`;}
+      <td class="srss">${tIcon('sunrise')}${sr} ${tIcon('sunset')}${ss}</td></tr>`;}
   document.getElementById('daily').innerHTML=html+'</tbody>';
 }
 
@@ -750,7 +854,14 @@ function renderTabs(){
     el.insertAdjacentHTML('beforeend',
       `<div class="tab ${id===currentTrail?'active':''}" data-id="${id}">${T.icon} ${T.name[lang]}<small>${T.elev}m · ${T.diff[lang]}${summitWindDir!=null?' · '+L()[windRel(summitWindDir,TRAIL_ASPECT[id])]:''}</small></div>`);
   });
-  el.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{currentTrail=t.dataset.id;load();}));
+  el.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    if(t.dataset.id===currentTrail)return;
+    currentTrail=t.dataset.id;
+    el.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.id===currentTrail));
+    const ti=document.getElementById('trail-info'); if(ti)ti.innerHTML='<div class="skel" style="height:118px"></div>';
+    const cd=document.getElementById('cards'); if(cd)cd.innerHTML='<div class="skel" style="height:190px"></div><div class="skel" style="height:190px"></div><div class="skel" style="height:190px"></div>';
+    load();
+  }));
 }
 
 function populateTZ(){
@@ -774,22 +885,22 @@ function renderBodyClock(summit){
   const cx=100,cy=100,R=92;
   const polar=(r,deg)=>[cx+r*Math.sin(deg*Math.PI/180), cy-r*Math.cos(deg*Math.PI/180)];
   const ni=energyIdx(nowHf);
-  const halo=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${EN_HEX[ni]}" stroke-width="6" opacity="0.55"/><circle cx="${cx}" cy="${cy}" r="${R-4}" fill="#16263a" stroke="#2b4359" stroke-width="1"/>`;
+  const halo=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${EN_HEX[ni]}" stroke-width="6" opacity="0.55"/><circle cx="${cx}" cy="${cy}" r="${R-4}" fill="#1d3149" stroke="#36506a" stroke-width="1"/>`;
   let ticks='';
   for(let h=0;h<12;h++){const major=(h%3===0),a=h*30,o=polar(R-7,a),i2=polar(major?R-16:R-12,a);
-    ticks+=`<line x1="${o[0].toFixed(1)}" y1="${o[1].toFixed(1)}" x2="${i2[0].toFixed(1)}" y2="${i2[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="${major?2.5:1.2}" opacity="${major?0.9:0.45}"/>`;}
-  let nums=''; [['12',0],['3',90],['6',180],['9',270]].forEach(p=>{const q=polar(R-30,p[1]);nums+=`<text x="${q[0].toFixed(1)}" y="${(q[1]+5).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="#eaf2fb">${p[0]}</text>`;});
+    ticks+=`<line x1="${o[0].toFixed(1)}" y1="${o[1].toFixed(1)}" x2="${i2[0].toFixed(1)}" y2="${i2[1].toFixed(1)}" stroke="#a6b3c1" stroke-width="${major?2.5:1.2}" opacity="${major?0.9:0.45}"/>`;}
+  let nums=''; [['12',0],['3',90],['6',180],['9',270]].forEach(p=>{const q=polar(R-30,p[1]);nums+=`<text x="${q[0].toFixed(1)}" y="${(q[1]+5).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="700" fill="#ede6d6">${p[0]}</text>`;});
   const ca=b=>((b.h%12)+b.m/60)*30;
-  const mk=(b,emo)=>{const m=polar(R-46,ca(b));return `<text x="${m[0].toFixed(1)}" y="${(m[1]+5).toFixed(1)}" text-anchor="middle" font-size="14">${emo}</text>`;};
-  let marks=mk(srB,'🌅'); if(winB)marks+=mk(winB,'🎯');
+  const mk=(b,name)=>{const m=polar(R-46,ca(b)),sz=16,s=sz/24;return `<g transform="translate(${(m[0]-sz/2).toFixed(1)},${(m[1]-sz/2).toFixed(1)}) scale(${s.toFixed(3)})" fill="none" stroke="var(--gold)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">${ICON_SVG[name]}</g>`;};
+  let marks=mk(srB,'sunrise'); if(winB)marks+=mk(winB,'target');
   const minA=homeNow.getUTCMinutes()*6, hourA=((homeNow.getUTCHours()%12)+homeNow.getUTCMinutes()/60)*30;
   const mh=polar(R-24,minA), hh=polar(R-50,hourA);
-  const hands=`<line x1="${cx}" y1="${cy}" x2="${hh[0].toFixed(1)}" y2="${hh[1].toFixed(1)}" stroke="#eaf2fb" stroke-width="4.5" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${mh[0].toFixed(1)}" y2="${mh[1].toFixed(1)}" stroke="#eaf2fb" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="17" fill="#0d1b2a" stroke="${EN_HEX[ni]}" stroke-width="2"/><text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="23">${EN_FACE[ni]}</text>`;
+  const hands=`<line x1="${cx}" y1="${cy}" x2="${hh[0].toFixed(1)}" y2="${hh[1].toFixed(1)}" stroke="#ede6d6" stroke-width="4.5" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${mh[0].toFixed(1)}" y2="${mh[1].toFixed(1)}" stroke="#ede6d6" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="17" fill="#15273b" stroke="${EN_HEX[ni]}" stroke-width="2"/><text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="23">${EN_FACE[ni]}</text>`;
   const svg=`<svg viewBox="-14 -14 228 228" class="bc-svg" role="img" aria-label="body clock">${halo}${ticks}${nums}${marks}${hands}</svg>`;
   const row=(lbl,jstStr,b)=>{const i=energyIdx(b.hf);return `<div class="bc-row"><span class="bc-l">${lbl}</span> <span class="bc-v">${jstStr.slice(11,16)} JST ${L().bcArrow} <b>${hm2(b)}</b> ${enBadge(b.hf)}</span><div class="bc-ad">${L().enAdvice[i]}</div></div>`;};
   let info=`<div class="bc-row"><span class="bc-l">${L().bcNow}</span> <span class="bc-v">${EN_FACE[ni]} <b>${hm2({h:homeNow.getUTCHours(),m:homeNow.getUTCMinutes()})}</b> ${enBadge(nowHf)}</span></div>`;
-  info+=row('🌅 '+L().bcSunrise, srStr, srB);
-  if(winB)info+=row('🎯 '+L().bcWindow, winStr, winB);
+  info+=row(iconize('🌅 '+L().bcSunrise), srStr, srB);
+  if(winB)info+=row(iconize('🎯 '+L().bcWindow), winStr, winB);
   const legend=`<div class="bc-leg">${L().enLevels.map((n,i)=>`<span><i style="background:${EN_HEX[i]}"></i>${n}</span>`).join('')}</div>`;
   const same=tzMin(homeTZ,new Date())===Math.round(offSec/60)?`<div class="bc-same">${L().bcSame}</div>`:'';
   el.innerHTML=`<div class="bc-wrap"><div class="bc-dial">${svg}</div><div class="bc-info">${info}${legend}${same}</div></div><div class="bc-note">${L().bcNote}</div>`;
@@ -827,7 +938,7 @@ function populateMyDate(summit){
   if(focusDate&&d.time.indexOf(focusDate)<0)focusDate='';
   sel.value=focusDate;
   sel.onchange=()=>{focusDate=sel.value;try{localStorage.setItem('fujiday',focusDate);}catch(_){}
-    if(LAST){renderMyDay(LAST.summit);drawDaily(LAST.summit);}};
+    if(LAST){renderMyDay(LAST.summit);renderGear(LAST.summit);drawDaily(LAST.summit);}};
 }
 function renderMyDay(summit){
   const el=document.getElementById('md-body'); if(!el)return;
@@ -841,20 +952,22 @@ function renderMyDay(summit){
   const srStr=d.sunrise[i].slice(11,16), srMs=jstToUTC(d.sunrise[i],offSec);
   let cd=''; if(srMs>Date.now()){const m=Math.round((srMs-Date.now())/60000);cd=L().mdSunIn+' '+L().durFmt(Math.floor(m/60),m%60);}
   const ws=bestWindows(summit).filter(w=>w.start.slice(0,10)===focusDate.slice(0,10));
-  const winHtml=ws.length?`<div class="md-win">🎯 ${L().mdWindowDay}：${ws.map(w=>{const e=new Date(new Date(w.end).getTime()+3600000);return w.start.slice(11,16)+'–'+String(e.getUTCHours()).padStart(2,'0')+':'+String(e.getUTCMinutes()).padStart(2,'0');}).join(' · ')}</div>`:`<div class="md-win md-muted">${L().mdNoWindowDay}</div>`;
+  const winHtml=ws.length?`<div class="md-win">${tIcon('target')}${L().mdWindowDay}：${ws.map(w=>{const e=new Date(new Date(w.end).getTime()+3600000);return w.start.slice(11,16)+'–'+String(e.getUTCHours()).padStart(2,'0')+':'+String(e.getUTCMinutes()).padStart(2,'0');}).join(' · ')}</div>`:`<div class="md-win md-muted">${L().mdNoWindowDay}</div>`;
   const chg=trackChange(focusDate,{pop:pop,gust:gust,rain:+d.precipitation_sum[i].toFixed(1),code:d.weather_code[i]});
   const rsum=d.precipitation_sum[i], rIdx=rainIdx(rsum);
   const rainLine=rsum>0?`<div class="md-line md-muted">💧 ${rsum.toFixed(1)} mm · ${L().rainLevels[rIdx]} · ${L().rainSpread} ${(rsum/10).toFixed(1)} cm · ${L().rainLand(rsum/10)}</div>`:'';
+  const purl=PERMIT[currentTrail];
+  const permitHtml=purl?`<a class="md-permit" href="${purl}" target="_blank" rel="noopener">🎫 ${L().permitBuy} <span class="ps">${L().permitFee}</span></a>`:`<div class="md-permit-note">${L().permitOther}</div>`;
   el.innerHTML=`<div class="md-line">${wmoIcon(d.weather_code[i])} ${wmoName(d.weather_code[i])} · ${Math.round(d.temperature_2m_max[i])}°/${Math.round(d.temperature_2m_min[i])}° · ${L().mdGorai} <b style="color:var(--gold)">${gk}%</b></div>
   <div class="focus">
     <div class="fbox ${popCls}"><div class="fk">${L().tPrecip}</div><div class="fv">${pop??'—'}</div><div class="fu">%</div></div>
     <div class="fbox"><div class="fk">${L().cRain}</div><div class="fv">${d.precipitation_sum[i].toFixed(1)}</div><div class="fu">mm</div></div>
     <div class="fbox ${gAl}"><div class="fk">${L().dHead[5]}</div><div class="fv">${gust}<span class="pill ${gcls}" style="margin-left:4px">${windLbl(gmax)}</span></div><div class="fu">m/s</div></div>
     <div class="fbox"><div class="fk">${L().mdSunrise}</div><div class="fv">${srStr}</div><div class="fu">${cd}</div></div>
-  </div>${rainLine}${winHtml}${chg}`;
+  </div>${rainLine}${winHtml}${chg}${permitHtml}`;
 }
 function copyLink(url){
-  const done=()=>{const b=document.getElementById('share');if(b){b.textContent=L().shareCopied;setTimeout(()=>{b.textContent=L().share;},1500);}};
+  const done=()=>{const b=document.getElementById('share');if(b){const orig=b.innerHTML;b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';b.title=L().shareCopied;b.classList.add('ok');setTimeout(()=>{b.innerHTML=orig;b.title=L().share.replace(/^[🔗\s]+/,'');b.classList.remove('ok');},1500);}};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done).catch(()=>{try{prompt('复制链接 / Copy link:',url);}catch(_){}});}
   else {try{prompt('复制链接 / Copy link:',url);}catch(_){}}
 }
@@ -869,6 +982,21 @@ function shareApp(){
   else copyLink(url);
 }
 
+function renderGear(summit){
+  const el=document.getElementById('gearcard'); if(!el)return;
+  const d=summit.daily, i=d.time.indexOf(focusDate);
+  if(i<0){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='';
+  const coldMin=Math.round(d.temperature_2m_min[i]);
+  const T=L(), g=gearList(coldMin,d.wind_gusts_10m_max[i],d.precipitation_probability_max[i],d.precipitation_sum[i],d.weather_code[i]);
+  const li=t=>{const m=t.match(/^(.*?[:：])([\s\S]*)$/);return `<div class="gear-li">${m?`<b>${m[1]}</b>${m[2]}`:t}</div>`;};
+  const must=T.gearMust.map(li).join('');
+  const rec=T.gearRec.map(li).join('');
+  el.innerHTML=`<div class="gear-h">${iconize(T.gearTitle)} · ${T.gearSummit(coldMin)}</div>`
+    +`<div class="gear-sec gear-must"><div class="gear-sech">⚠️ ${T.gearMustH}</div>${must}<div class="gear-note">${T.gearMustNote}</div></div>`
+    +`<div class="gear-sec"><div class="gear-sech">${T.gearRecH}</div><div class="gear-rec">${rec}</div></div>`
+    +(g.warns.length?`<div class="gear-warn">⚠️ ${g.warns.map(k=>T.gearWarn[k]).join(T.gearSep)}</div>`:'');
+}
 function renderQuote(){
   const el=document.getElementById('dayquote'); if(!el)return;
   const q=QUOTES[Math.floor(Date.now()/86400000)%QUOTES.length];
@@ -884,6 +1012,7 @@ function render(base,trail,summit){
   thunderAlert(summit);
   populateMyDate(summit);
   renderMyDay(summit);
+  renderGear(summit);
   renderQuote();
   populateTZ();
   renderBodyClock(summit);
@@ -903,31 +1032,50 @@ function setSeason(){
   const now=new Date(),m=now.getMonth()+1,day=now.getDate();
   const open=((m===7)||(m===8)||(m===9&&day<=10));
   const pill=document.getElementById('season');
-  pill.textContent=open?L().seasonOpen:L().seasonClosed;
-  pill.classList.toggle('closed-pill',!open);
+  pill.classList.remove('closed-pill');
+  if(open){pill.style.display='';pill.innerHTML='<span class="sdot"></span>'+L().seasonOpen;}
+  else{pill.style.display='none';pill.innerHTML='';}
 }
 
+const ICON_SVG={
+  mountain:'<path d="M2 19h20M4 19l5.5-11 3.5 7 2.5-4 4.5 8"/>',
+  sunrise:'<path d="M3 19h18M7 19a5 5 0 0 1 10 0M12 3v3M5 7l1.5 1.5M19 7l-1.5 1.5"/>',
+  sunset:'<path d="M3 19h18M7 19a5 5 0 0 1 10 0M12 9V3M9.5 6.5 12 9l2.5-2.5"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3 2"/>',
+  cloudsun:'<circle cx="8.5" cy="8" r="3"/><path d="M8.5 2v1.5M3.4 8H2M4.7 4.2 3.6 3.1"/><path d="M9 19h7.5a3.2 3.2 0 0 0 .3-6.4 4.5 4.5 0 0 0-8.6-.4A3.4 3.4 0 0 0 9 19z"/>',
+  calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 9.5h17"/>',
+  backpack:'<path d="M8 8V6.5a4 4 0 0 1 8 0V8"/><rect x="5" y="8" width="14" height="12.5" rx="3.5"/><path d="M9.5 13.5h5"/>',
+  route:'<path d="M6.5 21V4M6.5 4.5h10l-2.2 3 2.2 3h-10"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="12" cy="12" r="0.8"/>',
+  compass:'<circle cx="12" cy="12" r="8.5"/><path d="M14.6 9.4l-2.1 5.2-3 1 2.1-5.2z"/>',
+  chart:'<path d="M4 4v16h16M7 15l3.5-4 3 2.5L20 8"/>'
+};
+const EMOJI_ICON=[['🌤️','cloudsun'],['🗓','calendar'],['📅','calendar'],['🌅','sunrise'],['🕐','clock'],['🧥','backpack'],['🥾','route'],['🎯','target'],['🧭','compass'],['📈','chart'],['🗻','mountain'],['⛰️','mountain']];
+function tIcon(name){return `<svg class="tic" viewBox="0 0 24 24" aria-hidden="true">${ICON_SVG[name]||''}</svg>`;}
+function iconize(s){for(const it of EMOJI_ICON){if(s.indexOf(it[0])===0)return tIcon(it[1])+s.slice(it[0].length).replace(/^\s+/,'');}return s;}
 function applyStatic(){
   document.documentElement.lang=L().htmlLang;
-  document.getElementById('h1').innerHTML=L().title;
+  document.getElementById('h1').innerHTML=iconize(L().title);
   document.getElementById('meta').textContent=L().meta;
-  document.getElementById('refresh').textContent=L().refresh;
-  document.getElementById('install').textContent=L().install;
-  document.getElementById('gk-lbl').textContent=L().gkLbl;
-  document.getElementById('trail-head').textContent=L().trailHead;
+  {const a=document.getElementById('mtab-weather'),b=document.getElementById('mtab-day'); if(a)a.innerHTML=iconize(L().tabWeather); if(b)b.innerHTML=iconize(L().tabDay);}
+  {const r=document.getElementById('refresh'); if(r){const t=L().refresh.replace(/^[↻\s]+/,'');r.title=t;r.setAttribute('aria-label',t);}}
+  {const ib=document.getElementById('install'); if(ib){const t=L().install.replace(/^[📲\s]+/,'');ib.title=t;ib.setAttribute('aria-label',t);}}
+  document.getElementById('gk-lbl').innerHTML=iconize(L().gkLbl);
+  document.getElementById('trail-head').innerHTML=iconize(L().trailHead);
   {const e=document.getElementById('trail-sub'); if(e)e.textContent=L().trailSub;}
-  {const e=document.getElementById('cap-summit'); if(e)e.textContent=L().capSummit;}
-  document.getElementById('md-title').textContent=L().mdTitle;
-  {const sb=document.getElementById('share'); if(sb)sb.textContent=L().share;}
-  document.getElementById('bc-title').textContent=L().bcTitle;
+  {const e=document.getElementById('cap-summit'); if(e)e.innerHTML=iconize(L().capSummit);}
+  document.getElementById('md-title').innerHTML=iconize(L().mdTitle);
+  {const sb=document.getElementById('share'); if(sb){const t=L().share.replace(/^[🔗\s]+/,'');sb.title=t;sb.setAttribute('aria-label',t);}}
+  document.getElementById('bc-title').innerHTML=iconize(L().bcTitle);
   const tzs=document.getElementById('tz'); if(tzs) tzs.title=L().bcTz;
-  document.getElementById('h-trend').textContent=L().hTrend;
+  document.getElementById('h-trend').innerHTML=iconize(L().hTrend);
   document.getElementById('legend').textContent=L().legend;
-  document.getElementById('h-windows').textContent=L().hWindows;
-  document.getElementById('h-daily').textContent=L().hDaily;
+  document.getElementById('h-windows').innerHTML=iconize(L().hWindows);
+  document.getElementById('h-daily').innerHTML=iconize(L().hDaily);
   document.getElementById('foot1').textContent=L().foot1;
   document.getElementById('foot2').textContent=L().foot2;
-  document.getElementById('foot3').textContent=L().foot3;
+  {const e=document.getElementById('foot2b'); if(e)e.textContent=L().foot2b;}
+  {const e=document.getElementById('foot3'); if(e)e.textContent=L().foot3;}
   L().links.forEach((t,i)=>{const a=document.getElementById('lnk'+i);if(a)a.textContent=t;});
 }
 
@@ -966,6 +1114,17 @@ async function load(){
 
 document.getElementById('refresh').addEventListener('click',()=>{for(const k in cache)delete cache[k];load();});
 {const _sh=document.getElementById('share'); if(_sh)_sh.addEventListener('click',shareApp);}
+
+// 顶部标签切换（实时天气 / 我的登山日）
+let curView=(function(){try{return localStorage.getItem('fujiview')||'weather';}catch(_){return 'weather';}})();
+function showView(v){curView=v;try{localStorage.setItem('fujiview',v);}catch(_){}
+  const w=document.getElementById('view-weather'),dv=document.getElementById('view-day');
+  if(w)w.style.display=v==='weather'?'':'none';
+  if(dv)dv.style.display=v==='day'?'':'none';
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  if(v==='weather'&&LAST)drawChart(LAST.summit);
+}
+document.querySelectorAll('.mtab').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.v)));
 // 深链：?trail= ?lang= ?tz= ?date=
 (function(){try{const q=new URLSearchParams(location.search);
   const t=q.get('trail'); if(t&&TRAILS[t])currentTrail=t;
@@ -987,7 +1146,7 @@ if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{reg.update();}).catch(()=>{});});
 }
 
-updateLangUI(); applyStatic(); setSeason(); renderTabs(); renderQuote(); load();
+updateLangUI(); applyStatic(); setSeason(); renderTabs(); renderQuote(); showView(curView); load();
 setInterval(()=>{for(const k in cache)delete cache[k];load();},10*60*1000);
 setInterval(()=>{if(LAST){renderBodyClock(LAST.summit);renderMyDay(LAST.summit);}},60000);
 </script>

@@ -1,7 +1,7 @@
 // 富士山天气 PWA Service Worker
 // 策略：页面文档用「网络优先」(部署即时生效，断网回退缓存)；
 //      静态资源(图标/Chart.js)用「先缓存、后台更新」；天气接口不经 SW(页面用 localStorage 兜底)。
-const VERSION='v2';
+const VERSION='v3';
 const CACHE='fuji-weather-'+VERSION;
 const SHELL=[
   './','./index.html','./manifest.webmanifest',
